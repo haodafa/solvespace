@@ -47,7 +47,7 @@ void Group::AssembleLoops(bool *allClosed,
     // bezierLoops, with the outer loops grouped with their holes. The
     // leftovers, if any, go in bezierOpens.
     bezierLoops.FindOuterFacesFrom(&sbl, &polyLoops, NULL,
-                                   SS.ChordTolMm(),
+                                   CORE.ChordTolMm(),
                                    allClosed, &(polyError.notClosedAt),
                                    allCoplanar, &(polyError.errorPointAt),
                                    &bezierOpens);
@@ -75,7 +75,7 @@ void Group::GenerateLoops() {
             polyError.how = PolyError::GOOD;
             // The self-intersecting check is kind of slow, so don't run it
             // unless requested.
-            if(SS.checkClosedContour) {
+            if(CORE.checkClosedContour) {
                 if(polyLoops.SelfIntersecting(&(polyError.errorPointAt))) {
                     polyError.how = PolyError::SELF_INTERSECTING;
                 }
@@ -473,7 +473,7 @@ void Group::GenerateDisplayItems() {
             displayMesh.MakeFromCopyOf(&(pg->displayMesh));
 
             displayOutlines.Clear();
-            if(SS.GW.showEdges || SS.GW.showOutlines) {
+            if(CORE.GW.showEdges || CORE.GW.showOutlines) {
                 displayOutlines.MakeFromCopyOf(&pg->displayOutlines);
             }
         } else {
@@ -493,7 +493,7 @@ void Group::GenerateDisplayItems() {
 
             displayOutlines.Clear();
 
-            if(SS.GW.showEdges || SS.GW.showOutlines) {
+            if(CORE.GW.showEdges || CORE.GW.showOutlines) {
                 SOutlineList rawOutlines = {};
                 if(!runningMesh.l.IsEmpty()) {
                     // Triangle mesh only; no shell or emphasized edges.
@@ -515,7 +515,7 @@ void Group::GenerateDisplayItems() {
         displayMesh.PrecomputeTransparency();
 
         // Recalculate mass center if needed
-        if(SS.centerOfMass.draw && SS.centerOfMass.dirty && h == SS.GW.activeGroup) {
+        if(SS.centerOfMass.draw && SS.centerOfMass.dirty && h == CORE.GW.activeGroup) {
             SS.UpdateCenterOfMass();
         }
         displayDirty = false;
@@ -558,19 +558,19 @@ bool Group::IsMeshGroup() {
 }
 
 void Group::DrawMesh(DrawMeshAs how, Canvas *canvas) {
-    if(!(SS.GW.showShaded ||
-         SS.GW.drawOccludedAs != GraphicsWindow::DrawOccludedAs::VISIBLE)) return;
+    if(!(CORE.GW.showShaded ||
+         CORE.GW.drawOccludedAs != GraphicsWindow::DrawOccludedAs::VISIBLE)) return;
 
     switch(how) {
         case DrawMeshAs::DEFAULT: {
             // Force the shade color to something dim to not distract from
             // the sketch.
             Canvas::Fill fillFront = {};
-            if(!SS.GW.showShaded) {
+            if(!CORE.GW.showShaded) {
                 fillFront.layer = Canvas::Layer::DEPTH_ONLY;
             }
             if((type == Type::DRAWING_3D || type == Type::DRAWING_WORKPLANE)
-               && SS.GW.dimSolidModel) {
+               && CORE.GW.dimSolidModel) {
                 fillFront.color = Style::Color(Style::DIM_SOLID);
             }
             Canvas::hFill hcfFront = canvas->GetFill(fillFront);
@@ -578,7 +578,7 @@ void Group::DrawMesh(DrawMeshAs how, Canvas *canvas) {
             // The back faces are drawn in red; should never seem them, since we
             // draw closed shells, so that's a debugging aid.
             Canvas::hFill hcfBack = {};
-            if(SS.drawBackFaces && !displayMesh.isTransparent) {
+            if(CORE.drawBackFaces && !displayMesh.isTransparent) {
                 Canvas::Fill fillBack = {};
                 fillBack.layer = fillFront.layer;
                 fillBack.color = RgbaColor::FromFloat(1.0f, 0.1f, 0.1f);
@@ -592,7 +592,7 @@ void Group::DrawMesh(DrawMeshAs how, Canvas *canvas) {
             canvas->DrawMesh(displayMesh, hcfFront, hcfBack);
 
             // Draw mesh edges, for debugging.
-            if(SS.GW.showMesh) {
+            if(CORE.GW.showMesh) {
                 Canvas::Stroke strokeTriangle = {};
                 strokeTriangle.zIndex = 1;
                 strokeTriangle.color  = RgbaColor::FromFloat(0.0f, 1.0f, 0.0f);
@@ -619,7 +619,7 @@ void Group::DrawMesh(DrawMeshAs how, Canvas *canvas) {
             Canvas::hFill hcf = canvas->GetFill(fill);
 
             std::vector<uint32_t> faces;
-            hEntity he = SS.GW.hover.entity;
+            hEntity he = CORE.GW.hover.entity;
             if(he.v != 0 && SK.GetEntity(he)->IsFace()) {
                 faces.push_back(he.v);
             }
@@ -635,8 +635,8 @@ void Group::DrawMesh(DrawMeshAs how, Canvas *canvas) {
             Canvas::hFill hcf = canvas->GetFill(fill);
 
             std::vector<uint32_t> faces;
-            SS.GW.GroupSelection();
-            auto const &gs = SS.GW.gs;
+            CORE.GW.GroupSelection();
+            auto const &gs = CORE.GW.gs;
             // See also GraphicsWindow::MakeSelected "if(c >= MAX_SELECTABLE_FACES)"
             // and GraphicsWindow::GroupSelection "if(e->IsFace())"
             for(auto &fc : gs.face) {
@@ -656,19 +656,19 @@ void Group::Draw(Canvas *canvas) {
     GenerateDisplayItems();
     DrawMesh(DrawMeshAs::DEFAULT, canvas);
 
-    if(SS.GW.showEdges) {
+    if(CORE.GW.showEdges) {
         Canvas::Stroke strokeEdge = Style::Stroke(Style::SOLID_EDGE);
         strokeEdge.zIndex = 1;
         Canvas::hStroke hcsEdge = canvas->GetStroke(strokeEdge);
 
         canvas->DrawOutlines(displayOutlines, hcsEdge,
-                             SS.GW.showOutlines
+                             CORE.GW.showOutlines
                              ? Canvas::DrawOutlinesAs::EMPHASIZED_WITHOUT_CONTOUR
                              : Canvas::DrawOutlinesAs::EMPHASIZED_AND_CONTOUR);
 
-        if(SS.GW.drawOccludedAs != GraphicsWindow::DrawOccludedAs::INVISIBLE) {
+        if(CORE.GW.drawOccludedAs != GraphicsWindow::DrawOccludedAs::INVISIBLE) {
             Canvas::Stroke strokeHidden = Style::Stroke(Style::HIDDEN_EDGE);
-            if(SS.GW.drawOccludedAs == GraphicsWindow::DrawOccludedAs::VISIBLE) {
+            if(CORE.GW.drawOccludedAs == GraphicsWindow::DrawOccludedAs::VISIBLE) {
                 strokeHidden.stipplePattern = StipplePattern::CONTINUOUS;
             }
             strokeHidden.layer  = Canvas::Layer::OCCLUDED;
@@ -679,7 +679,7 @@ void Group::Draw(Canvas *canvas) {
         }
     }
 
-    if(SS.GW.showOutlines) {
+    if(CORE.GW.showOutlines) {
         Canvas::Stroke strokeOutline = Style::Stroke(Style::OUTLINE);
         strokeOutline.zIndex = 1;
         Canvas::hStroke hcsOutline = canvas->GetStroke(strokeOutline);
@@ -752,7 +752,7 @@ void Group::DrawFilledPaths(Canvas *canvas) {
         if(s->filled) {
             // This is a filled loop, where the user specified a fill color.
             fill.color = s->fillColor;
-        } else if(h == SS.GW.activeGroup && SS.checkClosedContour &&
+        } else if(h == CORE.GW.activeGroup && CORE.checkClosedContour &&
                     polyError.how == PolyError::GOOD) {
             // If this is the active group, and we are supposed to check
             // for closed contours, and we do indeed have a closed and
@@ -790,7 +790,7 @@ void Group::DrawContourAreaLabels(Canvas *canvas) {
         Canvas::Stroke stroke = Style::Stroke(hs);
         stroke.layer = Canvas::Layer::FRONT;
 
-        std::string label = SS.MmToStringSI(fabs(sbls.SignedArea()), /*dim=*/2);
+        std::string label = CORE.MmToStringSI(fabs(sbls.SignedArea()), /*dim=*/2);
         double fontHeight = Style::TextHeight(hs);
         double textWidth  = VectorFont::Builtin()->GetWidth(fontHeight, label),
                textHeight = VectorFont::Builtin()->GetCapHeight(fontHeight);

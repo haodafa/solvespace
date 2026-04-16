@@ -102,7 +102,7 @@ void SShell::MergeCoincidentSurfaces() {
             // in that case. So give a bit of extra room; in theory just
             // a chord tolerance, but more can't hurt.
             double muv = max((umax - umin), (vmax - vmin));
-            double tol = muv/50 + 3*SS.ChordTolMm();
+            double tol = muv/50 + 3*CORE.ChordTolMm();
             umax += tol;
             vmax += tol;
             umin -= tol;

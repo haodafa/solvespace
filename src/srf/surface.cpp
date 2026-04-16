@@ -384,7 +384,7 @@ void SSurface::MakeSectionEdgesInto(SShell *shell, SEdgeList *sel, SBezierList *
                         double t;
                         sb.ClosestPointTo(p, &t, /*mustConverge=*/false);
                         Vector pp = sb.PointAt(t);
-                        if((pp.Minus(p)).Magnitude() > SS.ChordTolMm()/2) {
+                        if((pp.Minus(p)).Magnitude() > CORE.ChordTolMm()/2) {
                             tooFar = true;
                             break;
                         }

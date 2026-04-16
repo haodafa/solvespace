@@ -72,7 +72,7 @@ void GraphicsWindow::DeleteSelection() {
 }
 
 void GraphicsWindow::CopySelection() {
-    SS.clipboard.Clear();
+    CORE.clipboard.Clear();
 
     Entity *wrkpl  = SK.GetEntity(ActiveWorkplane());
     Entity *wrkpln = SK.GetEntity(wrkpl->normal);
@@ -128,7 +128,7 @@ void GraphicsWindow::CopySelection() {
             cr.oldPointEnt[i] = e->point[i];
         }
 
-        SS.clipboard.r.Add(&cr);
+        CORE.clipboard.r.Add(&cr);
     }
 
     for(Selection *s = ls->First(); s; s = ls->NextAfter(s)) {
@@ -136,21 +136,21 @@ void GraphicsWindow::CopySelection() {
 
         Constraint *c = SK.GetConstraint(s->constraint);
         if(c->type == Constraint::Type::COMMENT) {
-            SS.clipboard.c.Add(c);
+            CORE.clipboard.c.Add(c);
         }
     }
 
     for(Constraint &c : SK.constraint) {
-        if(!SS.clipboard.ContainsEntity(c.ptA) ||
-           !SS.clipboard.ContainsEntity(c.ptB) ||
-           !SS.clipboard.ContainsEntity(c.entityA) ||
-           !SS.clipboard.ContainsEntity(c.entityB) ||
-           !SS.clipboard.ContainsEntity(c.entityC) ||
-           !SS.clipboard.ContainsEntity(c.entityD) ||
+        if(!CORE.clipboard.ContainsEntity(c.ptA) ||
+           !CORE.clipboard.ContainsEntity(c.ptB) ||
+           !CORE.clipboard.ContainsEntity(c.entityA) ||
+           !CORE.clipboard.ContainsEntity(c.entityB) ||
+           !CORE.clipboard.ContainsEntity(c.entityC) ||
+           !CORE.clipboard.ContainsEntity(c.entityD) ||
            c.type == Constraint::Type::COMMENT) {
             continue;
         }
-        SS.clipboard.c.Add(&c);
+        CORE.clipboard.c.Add(&c);
     }
 }
 
@@ -182,7 +182,7 @@ void GraphicsWindow::PasteClipboard(Vector trans, double theta, double scale) {
     };
 
     ClipboardRequest *cr;
-    for(cr = SS.clipboard.r.First(); cr; cr = SS.clipboard.r.NextAfter(cr)) {
+    for(cr = CORE.clipboard.r.First(); cr; cr = CORE.clipboard.r.NextAfter(cr)) {
         hRequest hr = AddRequest(cr->type, /*rememberForUndo=*/false);
         Request *r = SK.GetRequest(hr);
         r->extraPoints  = cr->extraPoints;
@@ -229,18 +229,18 @@ void GraphicsWindow::PasteClipboard(Vector trans, double theta, double scale) {
         }
     }
     Constraint *cc;
-    for(cc = SS.clipboard.c.First(); cc; cc = SS.clipboard.c.NextAfter(cc)) {
+    for(cc = CORE.clipboard.c.First(); cc; cc = CORE.clipboard.c.NextAfter(cc)) {
         Constraint c = {};
-        c.group = SS.GW.activeGroup;
-        c.workplane = SS.GW.ActiveWorkplane();
+        c.group = CORE.GW.activeGroup;
+        c.workplane = CORE.GW.ActiveWorkplane();
         c.type = cc->type;
         c.valA = cc->valA;
-        c.ptA = SS.clipboard.NewEntityFor(mapPoint(cc->ptA));
-        c.ptB = SS.clipboard.NewEntityFor(mapPoint(cc->ptB));
-        c.entityA = SS.clipboard.NewEntityFor(cc->entityA);
-        c.entityB = SS.clipboard.NewEntityFor(cc->entityB);
-        c.entityC = SS.clipboard.NewEntityFor(cc->entityC);
-        c.entityD = SS.clipboard.NewEntityFor(cc->entityD);
+        c.ptA = CORE.clipboard.NewEntityFor(mapPoint(cc->ptA));
+        c.ptB = CORE.clipboard.NewEntityFor(mapPoint(cc->ptB));
+        c.entityA = CORE.clipboard.NewEntityFor(cc->entityA);
+        c.entityB = CORE.clipboard.NewEntityFor(cc->entityB);
+        c.entityC = CORE.clipboard.NewEntityFor(cc->entityC);
+        c.entityD = CORE.clipboard.NewEntityFor(cc->entityD);
         c.other = cc->other;
         c.other2 = cc->other2;
         c.reference = cc->reference;
@@ -313,7 +313,7 @@ void GraphicsWindow::PasteClipboard(Vector trans, double theta, double scale) {
 }
 
 void GraphicsWindow::MenuClipboard(Command id) {
-    if(id != Command::DELETE && !SS.GW.LockedInWorkplane()) {
+    if(id != Command::DELETE && !CORE.GW.LockedInWorkplane()) {
         Error(_("Cut, paste, and copy work only in a workplane.\n\n"
                 "Activate one with Sketch -> In Workplane."));
         return;
@@ -321,47 +321,47 @@ void GraphicsWindow::MenuClipboard(Command id) {
 
     switch(id) {
         case Command::PASTE: {
-            SS.UndoRemember();
-            Vector trans = SS.GW.projRight.ScaledBy(80/SS.GW.scale).Plus(
-                           SS.GW.projUp   .ScaledBy(40/SS.GW.scale));
-            SS.GW.ClearSelection();
-            SS.GW.PasteClipboard(trans, 0, 1);
+            CORE.UndoRemember();
+            Vector trans = CORE.GW.projRight.ScaledBy(80/CORE.GW.scale).Plus(
+                           CORE.GW.projUp   .ScaledBy(40/CORE.GW.scale));
+            CORE.GW.ClearSelection();
+            CORE.GW.PasteClipboard(trans, 0, 1);
             break;
         }
 
         case Command::PASTE_TRANSFORM: {
-            if(SS.clipboard.r.IsEmpty()) {
+            if(CORE.clipboard.r.IsEmpty()) {
                 Error(_("Clipboard is empty; nothing to paste."));
                 break;
             }
 
-            Entity *wrkpl  = SK.GetEntity(SS.GW.ActiveWorkplane());
+            Entity *wrkpl  = SK.GetEntity(CORE.GW.ActiveWorkplane());
             Vector p = SK.GetEntity(wrkpl->point[0])->PointGetNum();
-            SS.TW.shown.paste.times  = 1;
-            SS.TW.shown.paste.trans  = {};
-            SS.TW.shown.paste.theta  = 0;
-            SS.TW.shown.paste.origin = p;
-            SS.TW.shown.paste.scale  = 1;
-            SS.TW.GoToScreen(TextWindow::Screen::PASTE_TRANSFORMED);
-            SS.GW.ForceTextWindowShown();
+            CORE.TW.shown.paste.times  = 1;
+            CORE.TW.shown.paste.trans  = {};
+            CORE.TW.shown.paste.theta  = 0;
+            CORE.TW.shown.paste.origin = p;
+            CORE.TW.shown.paste.scale  = 1;
+            CORE.TW.GoToScreen(TextWindow::Screen::PASTE_TRANSFORMED);
+            CORE.GW.ForceTextWindowShown();
             SS.ScheduleShowTW();
             break;
         }
 
         case Command::COPY:
-            SS.GW.CopySelection();
-            SS.GW.ClearSelection();
+            CORE.GW.CopySelection();
+            CORE.GW.ClearSelection();
             break;
 
         case Command::CUT:
-            SS.UndoRemember();
-            SS.GW.CopySelection();
-            SS.GW.DeleteSelection();
+            CORE.UndoRemember();
+            CORE.GW.CopySelection();
+            CORE.GW.DeleteSelection();
             break;
 
         case Command::DELETE:
-            SS.UndoRemember();
-            SS.GW.DeleteSelection();
+            CORE.UndoRemember();
+            CORE.GW.DeleteSelection();
             break;
 
         default: ssassert(false, "Unexpected menu ID");
@@ -408,86 +408,86 @@ bool TextWindow::EditControlDoneForPaste(const std::string &s) {
 void TextWindow::ScreenChangePasteTransformed(int link, uint32_t v) {
     switch(link) {
         case 't':
-            SS.TW.ShowEditControl(13, ssprintf("%d", SS.TW.shown.paste.times));
-            SS.TW.edit.meaning = Edit::PASTE_TIMES_REPEATED;
+            CORE.TW.ShowEditControl(13, ssprintf("%d", CORE.TW.shown.paste.times));
+            CORE.TW.edit.meaning = Edit::PASTE_TIMES_REPEATED;
             break;
 
         case 'r':
-            SS.TW.ShowEditControl(13, ssprintf("%.3f", SS.TW.shown.paste.theta*180/PI));
-            SS.TW.edit.meaning = Edit::PASTE_ANGLE;
+            CORE.TW.ShowEditControl(13, ssprintf("%.3f", CORE.TW.shown.paste.theta*180/PI));
+            CORE.TW.edit.meaning = Edit::PASTE_ANGLE;
             break;
 
         case 's':
-            SS.TW.ShowEditControl(13, ssprintf("%.3f", fabs(SS.TW.shown.paste.scale)));
-            SS.TW.edit.meaning = Edit::PASTE_SCALE;
+            CORE.TW.ShowEditControl(13, ssprintf("%.3f", fabs(CORE.TW.shown.paste.scale)));
+            CORE.TW.edit.meaning = Edit::PASTE_SCALE;
             break;
 
         case 'f':
-            SS.TW.shown.paste.scale *= -1;
+            CORE.TW.shown.paste.scale *= -1;
             break;
     }
 }
 
 void TextWindow::ScreenPasteTransformed(int link, uint32_t v) {
-    SS.GW.GroupSelection();
+    CORE.GW.GroupSelection();
     switch(link) {
         case 'o':
-            if(SS.GW.gs.points == 1 && SS.GW.gs.n == 1) {
-                Entity *e = SK.GetEntity(SS.GW.gs.point[0]);
-                SS.TW.shown.paste.origin = e->PointGetNum();
+            if(CORE.GW.gs.points == 1 && CORE.GW.gs.n == 1) {
+                Entity *e = SK.GetEntity(CORE.GW.gs.point[0]);
+                CORE.TW.shown.paste.origin = e->PointGetNum();
             } else {
                 Error(_("Select one point to define origin of rotation."));
             }
-            SS.GW.ClearSelection();
+            CORE.GW.ClearSelection();
             break;
 
         case 't':
-            if(SS.GW.gs.points == 2 && SS.GW.gs.n == 2) {
-                Entity *pa = SK.GetEntity(SS.GW.gs.point[0]),
-                       *pb = SK.GetEntity(SS.GW.gs.point[1]);
-                SS.TW.shown.paste.trans =
+            if(CORE.GW.gs.points == 2 && CORE.GW.gs.n == 2) {
+                Entity *pa = SK.GetEntity(CORE.GW.gs.point[0]),
+                       *pb = SK.GetEntity(CORE.GW.gs.point[1]);
+                CORE.TW.shown.paste.trans =
                     (pb->PointGetNum()).Minus(pa->PointGetNum());
             } else {
                 Error(_("Select two points to define translation vector."));
             }
-            SS.GW.ClearSelection();
+            CORE.GW.ClearSelection();
             break;
 
         case 'g': {
-            if(fabs(SS.TW.shown.paste.theta) < LENGTH_EPS &&
-               SS.TW.shown.paste.trans.Magnitude() < LENGTH_EPS &&
-               SS.TW.shown.paste.times != 1)
+            if(fabs(CORE.TW.shown.paste.theta) < LENGTH_EPS &&
+               CORE.TW.shown.paste.trans.Magnitude() < LENGTH_EPS &&
+               CORE.TW.shown.paste.times != 1)
             {
                 Message(_("Transformation is identity. So all copies will be "
                           "exactly on top of each other."));
             }
-            if(SS.TW.shown.paste.times*SS.clipboard.r.n > 100) {
+            if(CORE.TW.shown.paste.times*CORE.clipboard.r.n > 100) {
                 Error(_("Too many items to paste; split this into smaller "
                         "pastes."));
                 break;
             }
-            if(!SS.GW.LockedInWorkplane()) {
+            if(!CORE.GW.LockedInWorkplane()) {
                 Error(_("No workplane active."));
                 break;
             }
-            Entity *wrkpl  = SK.GetEntity(SS.GW.ActiveWorkplane());
+            Entity *wrkpl  = SK.GetEntity(CORE.GW.ActiveWorkplane());
             Entity *wrkpln = SK.GetEntity(wrkpl->normal);
             Vector wn = wrkpln->NormalN();
-            SS.UndoRemember();
-            SS.GW.ClearSelection();
-            for(int i = 0; i < SS.TW.shown.paste.times; i++) {
-                Vector trans  = SS.TW.shown.paste.trans.ScaledBy(i+1),
-                       origin = SS.TW.shown.paste.origin;
-                double theta = SS.TW.shown.paste.theta*(i+1);
+            CORE.UndoRemember();
+            CORE.GW.ClearSelection();
+            for(int i = 0; i < CORE.TW.shown.paste.times; i++) {
+                Vector trans  = CORE.TW.shown.paste.trans.ScaledBy(i+1),
+                       origin = CORE.TW.shown.paste.origin;
+                double theta = CORE.TW.shown.paste.theta*(i+1);
                 // desired transformation is Q*(p - o) + o + t =
                 // Q*p - Q*o + o + t = Q*p + (t + o - Q*o)
                 Vector t = trans.Plus(
                            origin).Minus(
                            origin.RotatedAbout(wn, theta));
 
-                SS.GW.PasteClipboard(t, theta, SS.TW.shown.paste.scale);
+                CORE.GW.PasteClipboard(t, theta, CORE.TW.shown.paste.scale);
             }
-            SS.TW.GoToScreen(Screen::LIST_OF_GROUPS);
+            CORE.TW.GoToScreen(Screen::LIST_OF_GROUPS);
             SS.ScheduleShowTW();
             break;
         }
@@ -503,14 +503,14 @@ void TextWindow::ShowPasteTransformed() {
         shown.paste.theta*180/PI,
         &ScreenChangePasteTransformed);
     Printf(false, "%Ba   %Ftabout pt%E  (%s, %s, %s) %Fl%Lo%f[use selected]%E",
-            SS.MmToString(shown.paste.origin.x).c_str(),
-            SS.MmToString(shown.paste.origin.y).c_str(),
-            SS.MmToString(shown.paste.origin.z).c_str(),
+            CORE.MmToString(shown.paste.origin.x).c_str(),
+            CORE.MmToString(shown.paste.origin.y).c_str(),
+            CORE.MmToString(shown.paste.origin.z).c_str(),
         &ScreenPasteTransformed);
     Printf(false, "%Bd   %Fttranslate%E (%s, %s, %s) %Fl%Lt%f[use selected]%E",
-            SS.MmToString(shown.paste.trans.x).c_str(),
-            SS.MmToString(shown.paste.trans.y).c_str(),
-            SS.MmToString(shown.paste.trans.z).c_str(),
+            CORE.MmToString(shown.paste.trans.x).c_str(),
+            CORE.MmToString(shown.paste.trans.y).c_str(),
+            CORE.MmToString(shown.paste.trans.z).c_str(),
         &ScreenPasteTransformed);
     Printf(false, "%Ba   %Ftscale%E     %@ %Fl%Ls%f[change]%E",
         fabs(shown.paste.scale),

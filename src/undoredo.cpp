@@ -9,14 +9,14 @@
 
 namespace SolveSpace {
 
-void SolveSpaceUI::UndoRemember() {
+void SolveSpaceCore::UndoRemember() {
     unsaved = true;
     PushFromCurrentOnto(&undo);
     UndoClearStack(&redo);
     UndoEnableMenus();
 }
 
-void SolveSpaceUI::UndoUndo() {
+void SolveSpaceCore::UndoUndo() {
     if(undo.cnt <= 0) return;
 
     PushFromCurrentOnto(&redo);
@@ -24,7 +24,7 @@ void SolveSpaceUI::UndoUndo() {
     UndoEnableMenus();
 }
 
-void SolveSpaceUI::UndoRedo() {
+void SolveSpaceCore::UndoRedo() {
     if(redo.cnt <= 0) return;
 
     PushFromCurrentOnto(&undo);
@@ -33,11 +33,12 @@ void SolveSpaceUI::UndoRedo() {
 }
 
 void SolveSpaceUI::UndoEnableMenus() {
-    SS.GW.undoMenuItem->SetEnabled(undo.cnt > 0);
-    SS.GW.redoMenuItem->SetEnabled(redo.cnt > 0);
+    CORE.GW.undoMenuItem->SetEnabled(undo.cnt > 0);
+    CORE.GW.redoMenuItem->SetEnabled(redo.cnt > 0);
 }
 
-void SolveSpaceUI::PushFromCurrentOnto(UndoStack *uk) {
+void SolveSpaceCore::PushFromCurrentOnto(UndoStack *uk) {
+    std::unique_lock<std::mutex> lock(stateMutex);
     if(uk->cnt == MAX_UNDO) {
         UndoClearState(&(uk->d[uk->write]));
         // And then write in to this one again
@@ -86,12 +87,13 @@ void SolveSpaceUI::PushFromCurrentOnto(UndoStack *uk) {
     for(auto &src : SK.param) { ut->param.Add(&src); }
     ut->style.ReserveMore(SK.style.n);
     for(auto &src : SK.style) { ut->style.Add(&src); }
-    ut->activeGroup = SS.GW.activeGroup;
+    ut->activeGroup = CORE.GW.activeGroup;
 
     uk->write = WRAP(uk->write + 1, MAX_UNDO);
 }
 
-void SolveSpaceUI::PopOntoCurrentFrom(UndoStack *uk) {
+void SolveSpaceCore::PopOntoCurrentFrom(UndoStack *uk) {
+    std::unique_lock<std::mutex> lock(stateMutex);
     ssassert(uk->cnt > 0, "Cannot pop from empty undo stack");
     (uk->cnt)--;
     uk->write = WRAP(uk->write - 1, MAX_UNDO);
@@ -117,25 +119,27 @@ void SolveSpaceUI::PopOntoCurrentFrom(UndoStack *uk) {
     ut->constraint.MoveSelfInto(&(SK.constraint));
     ut->param.MoveSelfInto(&(SK.param));
     ut->style.MoveSelfInto(&(SK.style));
-    SS.GW.activeGroup = ut->activeGroup;
+    CORE.GW.activeGroup = ut->activeGroup;
 
     // No need to free it, since a shallow copy was made above
     *ut = {};
 
     // And reset the state everywhere else in the program, since the
     // sketch just changed a lot.
-    SS.GW.ClearSuper();
-    SS.TW.ClearSuper();
-    SS.ReloadAllLinked(SS.saveFile);
+    CORE.GW.ClearSuper();
+    CORE.TW.ClearSuper();
+    CORE.ReloadAllLinked(CORE.saveFile);
+    lock.unlock();
     SS.GenerateAll(SolveSpaceUI::Generate::ALL);
+    lock.lock();
     SS.ScheduleShowTW();
 
     // Activate the group that was active before.
-    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    Group *activeGroup = SK.GetGroup(CORE.GW.activeGroup);
     activeGroup->Activate();
 }
 
-void SolveSpaceUI::UndoClearStack(UndoStack *uk) {
+void SolveSpaceCore::UndoClearStack(UndoStack *uk) {
     while(uk->cnt > 0) {
         uk->write = WRAP(uk->write - 1, MAX_UNDO);
         (uk->cnt)--;
@@ -144,7 +148,7 @@ void SolveSpaceUI::UndoClearStack(UndoStack *uk) {
     *uk = {}; // for good measure
 }
 
-void SolveSpaceUI::UndoClearState(UndoState *ut) {
+void SolveSpaceCore::UndoClearState(UndoState *ut) {
     for(auto &g : ut->group) { g.remap.clear(); }
     ut->group.Clear();
     ut->request.Clear();

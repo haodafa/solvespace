@@ -111,29 +111,36 @@ if(ENABLE_GUI OR ENABLE_CLI)
     # solvespace library
 
     set(solvespace_core_gl_SOURCES
-        solvespace.cpp)
-
-    add_library(solvespace-core STATIC
-        polygon.h
-        sketch.h
+        solvespace.cpp
         ui.h
-        render/render.h
-        srf/surface.h
-
-        bsp.cpp
-        clipboard.cpp
         confscreen.cpp
-        constraint.cpp
         describescreen.cpp
         draw.cpp
         drawconstraint.cpp
         drawentity.cpp
+        graphicswin.cpp
+        mouse.cpp
+        textscreens.cpp
+        textwin.cpp
+        toolbar.cpp
+        view.cpp
+        platform/gui.cpp
+)
+
+    add_library(solvespace_core STATIC
+        solvespace_core.cpp
+        polygon.h
+        sketch.h
+        srf/surface.h
+        render/render.h
+        bsp.cpp
+        clipboard.cpp
+        constraint.cpp
         export.cpp
         exportstep.cpp
         exportvector.cpp
         file.cpp
         generate.cpp
-        graphicswin.cpp
         group.cpp
         groupmesh.cpp
         importdxf.cpp
@@ -141,20 +148,14 @@ if(ENABLE_GUI OR ENABLE_CLI)
         importmesh.cpp
         mesh.cpp
         modify.cpp
-        mouse.cpp
         polyline.cpp
         polygon.cpp
         resource.cpp
         request.cpp
         style.cpp
-        textscreens.cpp
-        textwin.cpp
-        toolbar.cpp
         ttf.cpp
         undoredo.cpp
-        view.cpp
         platform/platform.cpp
-        platform/gui.cpp
         render/render.cpp
         render/render2d.cpp
         srf/boolean.cpp
@@ -167,16 +168,16 @@ if(ENABLE_GUI OR ENABLE_CLI)
         srf/surfinter.cpp
         srf/triangulate.cpp)
 
-    target_include_directories(solvespace-core PUBLIC
+    target_include_directories(solvespace_core PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(solvespace-core PRIVATE slvs-solver)
-    target_link_libraries(solvespace-core PUBLIC slvs_deps)
+    target_link_libraries(solvespace_core PRIVATE slvs-solver)
+    target_link_libraries(solvespace_core PUBLIC slvs_deps)
 
     # solvespace translations
 
     if(HAVE_GETTEXT)
-        get_target_property(solvespace_core_SOURCES solvespace-core SOURCES)
+        get_target_property(solvespace_core_SOURCES solvespace_core SOURCES)
         set(inputs
             ${solvespace_core_SOURCES}
             ${every_platform_SOURCES}
@@ -273,7 +274,7 @@ if(ENABLE_GUI)
 
     target_link_libraries(solvespace
         PRIVATE
-        solvespace-core
+        solvespace_core
         ${OPENGL_LIBRARIES})
 
     # OpenGL version
@@ -456,7 +457,7 @@ target_include_directories(solvespace-headless
 
 target_link_libraries(solvespace-headless
     PRIVATE
-    solvespace-core)
+    solvespace_core)
 
 # solvespace command-line executable
 
@@ -465,7 +466,7 @@ target_link_libraries(solvespace-headless
         $<TARGET_PROPERTY:resources,EXTRA_SOURCES>)
 
     target_link_libraries(solvespace-cli
-        solvespace-core
+        solvespace_core
         solvespace-headless)
 
     add_dependencies(solvespace-cli

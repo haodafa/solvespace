@@ -134,7 +134,7 @@ add_executable(solvespace-debugtool
     $<TARGET_PROPERTY:resources,EXTRA_SOURCES>)
 
 target_link_libraries(solvespace-debugtool
-    solvespace-core
+    solvespace_core
     solvespace-headless)
 
 add_dependencies(solvespace-debugtool

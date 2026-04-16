@@ -295,7 +295,7 @@ public:
                     case Constraint::Type::COMMENT: {
                         Style *st = SK.style.FindById(c.GetStyle());
                         writeText(xfrm(c.disp.offset), c.Label(),
-                                  Style::TextHeight(c.GetStyle()) / SS.GW.scale,
+                                  Style::TextHeight(c.GetStyle()) / CORE.GW.scale,
                                   st->textAngle, st->textOrigin, c.GetStyle());
                         break;
                     }
@@ -366,7 +366,7 @@ public:
 
     void writeBezierAsPwl(SBezier *sb) {
         List<Vector> lv = {};
-        sb->MakePwlInto(&lv, SS.ExportChordTolMm());
+        sb->MakePwlInto(&lv, CORE.ExportChordTolMm());
         hStyle hs = { (uint32_t)sb->auxA };
         DRW_Polyline polyline;
         assignEntityDefaults(&polyline, hs);
@@ -1290,8 +1290,8 @@ void GCodeFileWriter::FinishAndCloseFile() {
     sel.AssemblePolygon(&sp, NULL);
 
     int i;
-    for(i = 0; i < SS.gCode.passes; i++) {
-        double depth = (SS.gCode.depth / SS.gCode.passes)*(i+1);
+    for(i = 0; i < CORE.gCode.passes; i++) {
+        double depth = (CORE.gCode.depth / CORE.gCode.passes)*(i+1);
 
         SContour *sc;
         for(sc = sp.l.First(); sc; sc = sp.l.NextAfter(sc)) {
@@ -1299,19 +1299,19 @@ void GCodeFileWriter::FinishAndCloseFile() {
 
             SPoint *pt = sc->l.First();
             fprintf(f, "G00 X%s Y%s\r\n",
-                    SS.MmToString(pt->p.x).c_str(), SS.MmToString(pt->p.y).c_str());
+                    CORE.MmToString(pt->p.x).c_str(), CORE.MmToString(pt->p.y).c_str());
             fprintf(f, "G01 Z%s F%s\r\n",
-                    SS.MmToString(depth).c_str(), SS.MmToString(SS.gCode.plungeFeed).c_str());
+                    CORE.MmToString(depth).c_str(), CORE.MmToString(CORE.gCode.plungeFeed).c_str());
 
             pt = sc->l.NextAfter(pt);
             for(; pt; pt = sc->l.NextAfter(pt)) {
                 fprintf(f, "G01 X%s Y%s F%s\r\n",
-                        SS.MmToString(pt->p.x).c_str(), SS.MmToString(pt->p.y).c_str(),
-                        SS.MmToString(SS.gCode.feed).c_str());
+                        CORE.MmToString(pt->p.x).c_str(), CORE.MmToString(pt->p.y).c_str(),
+                        CORE.MmToString(CORE.gCode.feed).c_str());
             }
             // Move up to a clearance plane above the work.
             fprintf(f, "G00 Z%s\r\n",
-                    SS.MmToString(SS.gCode.safeHeight).c_str());
+                    CORE.MmToString(CORE.gCode.safeHeight).c_str());
         }
     }
 

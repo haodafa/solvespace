@@ -215,7 +215,7 @@ void GraphicsWindow::SelectByMarquee() {
                                   {orig.mouse.x, orig.mouse.y, VERY_POSITIVE});
 
     for(Entity &e : SK.entity) {
-        if(e.group != SS.GW.activeGroup) continue;
+        if(e.group != CORE.GW.activeGroup) continue;
         if(e.IsFace() || e.IsDistance()) continue;
         if(!e.IsVisible()) continue;
 
@@ -223,8 +223,8 @@ void GraphicsWindow::SelectByMarquee() {
         BBox entityBBox = e.GetOrGenerateScreenBBox(&entityHasBBox);
         if(entityHasBBox && entityBBox.Overlaps(marqueeBBox)) {
             if(e.type == Entity::Type::LINE_SEGMENT) {
-                Vector p0 = SS.GW.ProjectPoint3(e.EndpointStart());
-                Vector p1 = SS.GW.ProjectPoint3(e.EndpointFinish());
+                Vector p0 = CORE.GW.ProjectPoint3(e.EndpointStart());
+                Vector p1 = CORE.GW.ProjectPoint3(e.EndpointFinish());
                 if((!marqueeBBox.Contains({p0.x, p0.y}, 0)) &&
                    (!marqueeBBox.Contains({p1.x, p1.y}, 0))) {
                     // The selection marquee does not contain either of the line segment end points.
@@ -337,18 +337,18 @@ Camera GraphicsWindow::GetCamera() const {
     camera.projUp     = projUp;
     camera.projRight  = projRight;
     camera.scale      = scale;
-    camera.tangent    = SS.CameraTangent();
+    camera.tangent    = CORE.CameraTangent();
     return camera;
 }
 
 Lighting GraphicsWindow::GetLighting() const {
     Lighting lighting = {};
-    lighting.backgroundColor   = SS.backgroundColor;
-    lighting.ambientIntensity  = SS.ambientIntensity;
-    lighting.lightIntensity[0] = SS.lightIntensity[0];
-    lighting.lightIntensity[1] = SS.lightIntensity[1];
-    lighting.lightDirection[0] = SS.lightDir[0];
-    lighting.lightDirection[1] = SS.lightDir[1];
+    lighting.backgroundColor   = CORE.backgroundColor;
+    lighting.ambientIntensity  = CORE.ambientIntensity;
+    lighting.lightIntensity[0] = CORE.lightIntensity[0];
+    lighting.lightIntensity[1] = CORE.lightIntensity[1];
+    lighting.lightDirection[0] = CORE.lightDir[0];
+    lighting.lightDirection[1] = CORE.lightDir[1];
     return lighting;
 }
 
@@ -357,7 +357,7 @@ GraphicsWindow::Selection GraphicsWindow::ChooseFromHoverToSelect() {
     if(hoverList.IsEmpty())
         return sel;
 
-    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    Group *activeGroup = SK.GetGroup(CORE.GW.activeGroup);
     int bestOrder = -1;
     int bestZIndex = 0;
     double bestDepth = VERY_POSITIVE;
@@ -390,7 +390,7 @@ GraphicsWindow::Selection GraphicsWindow::ChooseFromHoverToDrag() {
     if(hoverList.IsEmpty())
         return sel;
 
-    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    Group *activeGroup = SK.GetGroup(CORE.GW.activeGroup);
     int bestOrder = -1;
     int bestZIndex = 0;
     double bestDepth = VERY_POSITIVE;
@@ -548,7 +548,7 @@ Vector GraphicsWindow::ProjectPoint4(Vector p, double *w) {
     r.y = p.Dot(projUp);
     r.z = p.Dot(projUp.Cross(projRight));
 
-    *w = 1 + r.z*SS.CameraTangent()*scale;
+    *w = 1 + r.z*CORE.CameraTangent()*scale;
     return r;
 }
 
@@ -569,8 +569,8 @@ Vector GraphicsWindow::UnProjectPoint(Point2d p) {
 }
 
 Vector GraphicsWindow::UnProjectPoint3(Vector p) {
-    p.z = p.z / (scale - p.z * SS.CameraTangent() * scale);
-    double w = 1 + p.z * SS.CameraTangent() * scale;
+    p.z = p.z / (scale - p.z * CORE.CameraTangent() * scale);
+    double w = 1 + p.z * CORE.CameraTangent() * scale;
     p.x *= w / scale;
     p.y *= w / scale;
 
@@ -615,7 +615,7 @@ void GraphicsWindow::DrawSnapGrid(Canvas *canvas) {
     wv = norm->NormalV();
     wn = norm->NormalN();
 
-    double g = SS.gridSpacing;
+    double g = CORE.gridSpacing;
 
     double umin = VERY_POSITIVE, umax = VERY_NEGATIVE,
            vmin = VERY_POSITIVE, vmax = VERY_NEGATIVE;
@@ -681,7 +681,7 @@ void GraphicsWindow::DrawSnapGrid(Canvas *canvas) {
 void GraphicsWindow::DrawEntities(Canvas *canvas, bool persistent) {
     for(Entity &e : SK.entity) {
         if(persistent == (e.IsNormal() || e.IsWorkplane())) continue;
-        switch(SS.GW.drawOccludedAs) {
+        switch(CORE.GW.drawOccludedAs) {
             case DrawOccludedAs::VISIBLE:
                 e.Draw(Entity::DrawAs::OVERLAY, canvas);
                 break;
@@ -721,7 +721,7 @@ void GraphicsWindow::Draw(Canvas *canvas) {
     // we get an error, so a dialog pops up, and a message loop starts, and
     // we have to get called to paint ourselves. If the sketch is screwed
     // up, then we could trigger an oops trying to draw.
-    if(!SS.allConsistent) return;
+    if(!CORE.allConsistent) return;
 
     if(showSnapGrid) DrawSnapGrid(canvas);
 
@@ -744,7 +744,7 @@ void GraphicsWindow::Draw(Canvas *canvas) {
     DrawEntities(canvas, /*persistent=*/false);
 
     // Draw the polygon errors.
-    if(SS.checkClosedContour) {
+    if(CORE.checkClosedContour) {
         SK.GetGroup(activeGroup)->DrawPolyError(canvas);
     }
 
@@ -754,7 +754,7 @@ void GraphicsWindow::Draw(Canvas *canvas) {
     }
 
     // Draw areas
-    if(SS.showContourAreas) {
+    if(CORE.showContourAreas) {
         for(hGroup hg : SK.groupOrder) {
             Group *g = SK.GetGroup(hg);
             if(g->h != activeGroup) continue;
@@ -765,13 +765,13 @@ void GraphicsWindow::Draw(Canvas *canvas) {
 
     // Draw the "pending" constraint, i.e. a constraint that would be
     // placed on a line that is almost horizontal or vertical.
-    if(SS.GW.pending.operation == Pending::DRAGGING_NEW_LINE_POINT &&
-            SS.GW.pending.hasSuggestion) {
+    if(CORE.GW.pending.operation == Pending::DRAGGING_NEW_LINE_POINT &&
+            CORE.GW.pending.hasSuggestion) {
         Constraint c = {};
-        c.group = SS.GW.activeGroup;
-        c.workplane = SS.GW.ActiveWorkplane();
-        c.type = SS.GW.pending.suggestion;
-        c.entityA = SS.GW.pending.request.entity(0);
+        c.group = CORE.GW.activeGroup;
+        c.workplane = CORE.GW.ActiveWorkplane();
+        c.type = CORE.GW.pending.suggestion;
+        c.entityA = CORE.GW.pending.request.entity(0);
         c.Draw(Constraint::DrawAs::DEFAULT, canvas);
     }
 
@@ -824,9 +824,9 @@ void GraphicsWindow::Draw(Canvas *canvas) {
         const int subdiv = 16;
         double h = Style::DefaultTextHeight() / camera.scale;
         std::string s =
-            SS.MmToStringSI(p.x) + ", " +
-            SS.MmToStringSI(p.y) + ", " +
-            SS.MmToStringSI(p.z);
+            CORE.MmToStringSI(p.x) + ", " +
+            CORE.MmToStringSI(p.y) + ", " +
+            CORE.MmToStringSI(p.z);
         canvas->DrawVectorText(s.c_str(), h,
                                p.Plus(u.ScaledBy((size + 5.0)/scale)).Minus(v.ScaledBy(h / 2.0)),
                                u, v, hcsDatum);
@@ -880,6 +880,8 @@ void GraphicsWindow::Draw(Canvas *canvas) {
 }
 
 void GraphicsWindow::Paint() {
+    std::unique_lock<std::mutex> lock(CORE.stateMutex);
+
     ssassert(window != NULL && canvas != NULL,
              "Cannot paint without window and canvas");
 
@@ -929,17 +931,17 @@ void GraphicsWindow::Paint() {
     }
 
     // If we've had a screenshot requested, take it now, before the UI is overlaid.
-    if(!SS.screenshotFile.IsEmpty()) {
-        FILE *f = OpenFile(SS.screenshotFile, "wb");
+    if(!CORE.screenshotFile.IsEmpty()) {
+        FILE *f = OpenFile(CORE.screenshotFile, "wb");
         if(!f || !canvas->ReadFrame()->WritePng(f, /*flip=*/true)) {
-            Error("Couldn't write to '%s'", SS.screenshotFile.raw.c_str());
+            Error("Couldn't write to '%s'", CORE.screenshotFile.raw.c_str());
         }
         if(f) fclose(f);
-        SS.screenshotFile.Clear();
+        CORE.screenshotFile.Clear();
     }
 
     // And finally the toolbar.
-    if(SS.showToolbar) {
+    if(CORE.showToolbar) {
         canvas->SetCamera(camera);
         ToolbarDraw(&uiCanvas);
     }

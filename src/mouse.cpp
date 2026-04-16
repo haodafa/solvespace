@@ -304,8 +304,11 @@ void GraphicsWindow::MouseMoved(double x, double y, bool leftDown,
     }
 
     havePainted = false;
-    switch(pending.operation) {
-        case Pending::DRAGGING_CONSTRAINT: {
+
+    {
+        std::unique_lock<std::mutex> lock(CORE.stateMutex);
+        switch(pending.operation) {
+            case Pending::DRAGGING_CONSTRAINT: {
             Constraint *c = SK.constraint.FindById(pending.constraint);
             UpdateDraggedNum(&(c->disp.offset), x, y);
             orig.mouse = mp;
@@ -488,7 +491,11 @@ void GraphicsWindow::MouseMoved(double x, double y, bool leftDown,
         case Pending::NONE:
         case Pending::COMMAND:
             ssassert(false, "Unexpected pending operation");
+        }
     }
+
+    // Process any scheduled generation immediately to ensure smooth dragging
+    SS.Refresh();
 }
 
 void GraphicsWindow::ClearPending(bool scheduleShowTW) {

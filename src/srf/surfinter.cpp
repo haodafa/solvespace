@@ -426,8 +426,8 @@ void SSurface::IntersectAgainst(SSurface *b, SShell *agnstA, SShell *agnstB,
             spl.l.RemoveTagged();
 
             // Our chord tolerance is whatever the user specified
-            double maxtol = SS.ChordTolMm();
-            int maxsteps = max(300, SS.GetMaxSegments()*3);
+            double maxtol = CORE.ChordTolMm();
+            int maxsteps = max(300, CORE.GetMaxSegments()*3);
 
             // The curve starts at our starting point.
             SCurvePt padd = {};
@@ -481,7 +481,7 @@ void SSurface::IntersectAgainst(SSurface *b, SShell *agnstA, SShell *agnstB,
 
                 SPoint *sp;
                 for(sp = spl.l.First(); sp; sp = spl.l.NextAfter(sp)) {
-                    if((sp->p).OnLineSegment(start, npc, 2*SS.ChordTolMm())) {
+                    if((sp->p).OnLineSegment(start, npc, 2*CORE.ChordTolMm())) {
                         sp->tag = 1;
                         a = maxsteps;
                         npc = sp->p;

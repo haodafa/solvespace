@@ -537,7 +537,7 @@ void StepFileWriter::ExportSurface(SSurface *ss, SBezierList *sbl) {
     // tolerance are required, because they are used to calculate the
     // contour directions and determine inner vs. outer contours.
     sblss.FindOuterFacesFrom(sbl, &spxyz, ss,
-                             SS.ExportChordTolMm(),
+                             CORE.ExportChordTolMm(),
                              &allClosed, &notClosedAt,
                              NULL, NULL,
                              NULL);
@@ -629,7 +629,7 @@ void StepFileWriter::WriteFooter() {
 }
 
 void StepFileWriter::ExportSurfacesTo(const Platform::Path &filename) {
-    Group *g = SK.GetGroup(SS.GW.activeGroup);
+    Group *g = SK.GetGroup(CORE.GW.activeGroup);
     SShell *shell = &(g->runningShell);
 
     if(shell->surface.IsEmpty()) {
@@ -670,8 +670,8 @@ void StepFileWriter::ExportSurfacesTo(const Platform::Path &filename) {
         ss.MakeSectionEdgesInto(shell, NULL, &sbl);
 
         // Apply the export scale factor.
-        ss.ScaleSelfBy(1.0/SS.exportScale);
-        sbl.ScaleSelfBy(1.0/SS.exportScale);
+        ss.ScaleSelfBy(1.0/CORE.exportScale);
+        sbl.ScaleSelfBy(1.0/CORE.exportScale);
 
         ExportSurface(&ss, &sbl);
 

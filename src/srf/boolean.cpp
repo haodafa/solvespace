@@ -137,7 +137,7 @@ SCurve SCurve::MakeCopySplitAgainst(SShell *agnstA, SShell *agnstB,
                 if(c == SBspUv::Class::OUTSIDE) {
                     double d = VERY_POSITIVE;
                     if(pi->srf->bsp) d = pi->srf->bsp->MinimumDistanceToEdge(puv, pi->srf);
-                    if(d > SS.ChordTolMm()) {
+                    if(d > CORE.ChordTolMm()) {
                         pi->tag = 1;
                         continue;
                     }
@@ -454,7 +454,7 @@ void SSurface::EdgeNormalsWithinSurface(Point2d auv, Point2d buv,
 
     // Compute the edge's inner normal in xyz space.
     Vector ab    = (PointAt(auv)).Minus(PointAt(buv)),
-           enxyz = (ab.Cross(*surfn)).WithMagnitude(SS.ChordTolMm());
+           enxyz = (ab.Cross(*surfn)).WithMagnitude(CORE.ChordTolMm());
     // And based on that, compute the edge's inner normal in uv space. This
     // vector is perpendicular to the edge in xyz, but not necessarily in uv.
     Vector tu, tv, tx, ty;

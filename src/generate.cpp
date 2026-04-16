@@ -31,7 +31,7 @@ void SolveSpaceUI::MarkGroupDirty(hGroup hg, bool onlyThis) {
     ScheduleGenerateAll();
 }
 
-bool SolveSpaceUI::PruneOrphans() {
+bool SolveSpaceCore::PruneOrphans() {
     const int requests = SK.request.n;
     for(Request &r : SK.request) {
         if(!GroupExists(r.group))
@@ -52,7 +52,7 @@ bool SolveSpaceUI::PruneOrphans() {
     return (requests > SK.request.n) || (constraints > SK.constraint.n);
 }
 
-bool SolveSpaceUI::GroupsInOrder(hGroup before, hGroup after) {
+bool SolveSpaceCore::GroupsInOrder(hGroup before, hGroup after) {
     if(before.v == 0) return true;
     if(after.v  == 0) return true;
     if(!GroupExists(before)) return false;
@@ -63,18 +63,18 @@ bool SolveSpaceUI::GroupsInOrder(hGroup before, hGroup after) {
     return true;
 }
 
-bool SolveSpaceUI::GroupExists(hGroup hg) {
+bool SolveSpaceCore::GroupExists(hGroup hg) {
     // A nonexistent group is not acceptable
     return SK.group.FindByIdNoOops(hg) ? true : false;
 }
-bool SolveSpaceUI::EntityExists(hEntity he) {
+bool SolveSpaceCore::EntityExists(hEntity he) {
     // A nonexstient entity is acceptable, though, usually just means it
     // doesn't apply.
     if(he == Entity::NO_ENTITY) return true;
     return SK.entity.FindByIdNoOops(he) ? true : false;
 }
 
-bool SolveSpaceUI::PruneGroups(hGroup hg) {
+bool SolveSpaceCore::PruneGroups(hGroup hg) {
     Group *g = SK.GetGroup(hg);
     if(GroupsInOrder(g->opA, hg) &&
        EntityExists(g->predef.origin) &&
@@ -88,7 +88,7 @@ bool SolveSpaceUI::PruneGroups(hGroup hg) {
     return true;
 }
 
-bool SolveSpaceUI::PruneRequestsAndConstraints(hGroup hg) {
+bool SolveSpaceCore::PruneRequestsAndConstraints(hGroup hg) {
     auto entityRequestExists = [](hEntity he, bool checkEntity = false) {
         if(he == Entity::NO_ENTITY) {
             return true;
@@ -150,6 +150,8 @@ bool SolveSpaceUI::PruneRequestsAndConstraints(hGroup hg) {
 }
 
 void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox) {
+    std::unique_lock<std::mutex> lock(CORE.stateMutex);
+
     int first = 0, last = 0, i;
 
     uint64_t startMillis = GetMilliseconds(),
@@ -175,7 +177,7 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
                 if((!g->clean) || !g->IsSolvedOkay()) {
                     first = min(first, i);
                 }
-                if(g->h == SS.GW.activeGroup) {
+                if(g->h == CORE.GW.activeGroup) {
                     last = i;
                 }
             }
@@ -201,7 +203,7 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
 
         case Generate::UNTIL_ACTIVE: {
             for(i = 0; i < SK.groupOrder.n; i++) {
-                if(SK.groupOrder[i] == SS.GW.activeGroup)
+                if(SK.groupOrder[i] == CORE.GW.activeGroup)
                     break;
             }
 
@@ -213,7 +215,7 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
 
     // If we're generating entities for display, first we need to find
     // the bounding box to turn relative chord tolerance to absolute.
-    if(!SS.exportMode && !genForBBox) {
+    if(!CORE.exportMode && !genForBBox) {
         GenerateAll(type, andFindFree, /*genForBBox=*/true);
         BBox box = SK.CalculateEntityBBox(/*includeInvisibles=*/true);
         Vector size = box.maxp.Minus(box.minp);
@@ -340,7 +342,7 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
         // the active group or active workplane could have been deleted. So
         // clear all that out.
         if(deleted.groups > 0) {
-            SS.TW.ClearSuper();
+            CORE.TW.ClearSuper();
         }
         ScheduleShowTW();
         GW.ClearSuper();
@@ -375,7 +377,7 @@ void SolveSpaceUI::GenerateAll(Generate type, bool andFindFree, bool genForBBox)
 
     Platform::FreeAllTemporary();
     allConsistent = true;
-    SS.GW.persistentDirty = true;
+    CORE.GW.persistentDirty = true;
     SS.centerOfMass.dirty = true;
 
     endMillis = GetMilliseconds();
@@ -437,7 +439,7 @@ void SolveSpaceUI::ForceReferences() {
 }
 
 void SolveSpaceUI::UpdateCenterOfMass() {
-    SMesh *m = &(SK.GetGroup(SS.GW.activeGroup)->displayMesh);
+    SMesh *m = &(SK.GetGroup(CORE.GW.activeGroup)->displayMesh);
     SS.centerOfMass.position = m->GetCenterOfMass();
     SS.centerOfMass.dirty = false;
 }
@@ -445,12 +447,12 @@ void SolveSpaceUI::UpdateCenterOfMass() {
 void SolveSpaceUI::MarkDraggedParams() {
     sys.dragged.clear();
 
-    for(int i = -1; i < SS.GW.pending.points.n; i++) {
+    for(int i = -1; i < CORE.GW.pending.points.n; i++) {
         hEntity hp;
         if(i == -1) {
-            hp = SS.GW.pending.point;
+            hp = CORE.GW.pending.point;
         } else {
-            hp = SS.GW.pending.points[i];
+            hp = CORE.GW.pending.points[i];
         }
         if(!hp.v) continue;
 
@@ -478,8 +480,8 @@ void SolveSpaceUI::MarkDraggedParams() {
             }
         }
     }
-    if(SS.GW.pending.circle.v) {
-        Entity *circ = SK.entity.FindByIdNoOops(SS.GW.pending.circle);
+    if(CORE.GW.pending.circle.v) {
+        Entity *circ = SK.entity.FindByIdNoOops(CORE.GW.pending.circle);
         if(circ) {
             Entity *dist = SK.GetEntity(circ->distance);
             switch(dist->type) {
@@ -492,8 +494,8 @@ void SolveSpaceUI::MarkDraggedParams() {
             }
         }
     }
-    if(SS.GW.pending.normal.v) {
-        Entity *norm = SK.entity.FindByIdNoOops(SS.GW.pending.normal);
+    if(CORE.GW.pending.normal.v) {
+        Entity *norm = SK.entity.FindByIdNoOops(CORE.GW.pending.normal);
         if(norm) {
             switch(norm->type) {
                 case Entity::Type::NORMAL_IN_3D:
@@ -556,7 +558,7 @@ void SolveSpaceUI::SolveGroup(hGroup hg, bool andFindFree) {
     WriteEqSystemForGroup(hg);
     Group *g = SK.GetGroup(hg);
     g->solved.remove.Clear();
-    g->solved.findToFixTimeout = SS.timeoutRedundantConstr;
+    g->solved.findToFixTimeout = CORE.timeoutRedundantConstr;
     SolveResult how = sys.Solve(g, &(g->solved.dof),
                                    &(g->solved.remove),
                                    /*andFindBad=*/!g->allowRedundant,
@@ -585,7 +587,7 @@ bool SolveSpaceUI::ActiveGroupsOkay() {
         Group *g = SK.GetGroup(SK.groupOrder[i]);
         if(!g->IsSolvedOkay())
             return false;
-        if(g->h == SS.GW.activeGroup)
+        if(g->h == CORE.GW.activeGroup)
             break;
     }
     return true;

@@ -130,7 +130,7 @@ void Style::LoadFactoryDefaults() {
         Style *s = Get(d->h);
         FillDefaultStyle(s, d, /*factory=*/true);
     }
-    SS.backgroundColor = RGBi(0, 0, 0);
+    CORE.backgroundColor = RGBi(0, 0, 0);
 }
 
 void Style::FreezeDefaultStyles(Platform::SettingsRef settings) {
@@ -146,7 +146,7 @@ void Style::FreezeDefaultStyles(Platform::SettingsRef settings) {
 }
 
 uint32_t Style::CreateCustomStyle(bool rememberForUndo) {
-    if(rememberForUndo) SS.UndoRemember();
+    if(rememberForUndo) CORE.UndoRemember();
     uint32_t vs = max((uint32_t)Style::FIRST_CUSTOM, SK.style.MaximumId() + 1);
     hStyle hs = { vs };
     (void)Style::Get(hs);
@@ -155,12 +155,12 @@ uint32_t Style::CreateCustomStyle(bool rememberForUndo) {
 
 void Style::AssignSelectionToStyle(uint32_t v) {
     bool showError = false;
-    SS.GW.GroupSelection();
+    CORE.GW.GroupSelection();
 
-    SS.UndoRemember();
+    CORE.UndoRemember();
     int i;
-    for(i = 0; i < SS.GW.gs.entities; i++) {
-        hEntity he = SS.GW.gs.entity[i];
+    for(i = 0; i < CORE.GW.gs.entities; i++) {
+        hEntity he = CORE.GW.gs.entity[i];
         Entity *e = SK.GetEntity(he);
         if(!e->IsStylable()) continue;
 
@@ -174,8 +174,8 @@ void Style::AssignSelectionToStyle(uint32_t v) {
         r->style.v = v;
         SS.MarkGroupDirty(r->group);
     }
-    for(i = 0; i < SS.GW.gs.constraints; i++) {
-        hConstraint hc = SS.GW.gs.constraint[i];
+    for(i = 0; i < CORE.GW.gs.constraints; i++) {
+        hConstraint hc = CORE.GW.gs.constraint[i];
         Constraint *c = SK.GetConstraint(hc);
         if(!c->IsStylable()) continue;
 
@@ -188,12 +188,12 @@ void Style::AssignSelectionToStyle(uint32_t v) {
                 "entity; try assigning a style to this entity's parent."));
     }
 
-    SS.GW.ClearSelection();
-    SS.GW.Invalidate();
+    CORE.GW.ClearSelection();
+    CORE.GW.Invalidate();
 
     // And show that style's info screen in the text window.
-    SS.TW.GoToScreen(TextWindow::Screen::STYLE_INFO);
-    SS.TW.shown.style.v = v;
+    CORE.TW.GoToScreen(TextWindow::Screen::STYLE_INFO);
+    CORE.TW.shown.style.v = v;
     SS.ScheduleShowTW();
 }
 
@@ -235,7 +235,7 @@ double Style::Width(int s) {
 RgbaColor Style::RewriteColor(RgbaColor rgbin) {
     Vector rgb = {rgbin.redF(), rgbin.greenF(), rgbin.blueF()};
     rgb = rgb.Minus({1, 1, 1});
-    if(rgb.Magnitude() < 0.4 && SS.fixExportColors) {
+    if(rgb.Magnitude() < 0.4 && CORE.fixExportColors) {
         // This is an almost-white color in a default style, which is
         // good for the default on-screen view (black bg) but probably
         // not desired in the exported files, which typically are shown
@@ -276,7 +276,7 @@ RgbaColor Style::FillColor(hStyle h, bool forExport) {
 double Style::Width(hStyle h) {
     Style *s = Get(h);
     switch(s->widthAs) {
-        case UnitsAs::MM:     return s->width * SS.GW.scale;
+        case UnitsAs::MM:     return s->width * CORE.GW.scale;
         case UnitsAs::PIXELS: return s->width;
     }
     ssassert(false, "Unexpected units");
@@ -287,7 +287,7 @@ double Style::Width(hStyle h) {
 //-----------------------------------------------------------------------------
 double Style::WidthMm(int hs) {
     double widthpx = Width(hs);
-    return widthpx / SS.GW.scale;
+    return widthpx / CORE.GW.scale;
 }
 
 //-----------------------------------------------------------------------------
@@ -296,7 +296,7 @@ double Style::WidthMm(int hs) {
 double Style::TextHeight(hStyle h) {
     Style *s = Get(h);
     switch(s->textHeightAs) {
-        case UnitsAs::MM:     return s->textHeight * SS.GW.scale;
+        case UnitsAs::MM:     return s->textHeight * CORE.GW.scale;
         case UnitsAs::PIXELS: return s->textHeight;
     }
     ssassert(false, "Unexpected units");
@@ -358,7 +358,7 @@ hStyle Style::ForEntity(hEntity he) {
 
     // Otherwise, we use the default rules.
     hStyle hs;
-    if(e->group != SS.GW.activeGroup) {
+    if(e->group != CORE.GW.activeGroup) {
         hs.v = INACTIVE_GRP;
     } else if(e->construction) {
         hs.v = CONSTRUCTION;
@@ -429,7 +429,7 @@ double Style::StippleScaleMm(hStyle hs) {
     if(s->widthAs == UnitsAs::MM) {
         return s->stippleScale;
     } else if(s->widthAs == UnitsAs::PIXELS) {
-        return s->stippleScale / SS.GW.scale;
+        return s->stippleScale / CORE.GW.scale;
     }
     return 1.0;
 }
@@ -444,18 +444,18 @@ std::string Style::DescriptionString() const {
 
 
 void TextWindow::ScreenShowListOfStyles(int link, uint32_t v) {
-    SS.TW.GoToScreen(Screen::LIST_OF_STYLES);
+    CORE.TW.GoToScreen(Screen::LIST_OF_STYLES);
 }
 void TextWindow::ScreenShowStyleInfo(int link, uint32_t v) {
     GraphicsWindow::MenuEdit(Command::UNSELECT_ALL);
-    SS.TW.GoToScreen(Screen::STYLE_INFO);
-    SS.TW.shown.style.v = v;
+    CORE.TW.GoToScreen(Screen::STYLE_INFO);
+    CORE.TW.shown.style.v = v;
 }
 
 void TextWindow::ScreenLoadFactoryDefaultStyles(int link, uint32_t v) {
     Style::LoadFactoryDefaults();
-    SS.TW.GoToScreen(Screen::LIST_OF_STYLES);
-    SS.GW.persistentDirty = true;
+    CORE.TW.GoToScreen(Screen::LIST_OF_STYLES);
+    CORE.GW.persistentDirty = true;
 }
 
 void TextWindow::ScreenCreateCustomStyle(int link, uint32_t v) {
@@ -463,9 +463,9 @@ void TextWindow::ScreenCreateCustomStyle(int link, uint32_t v) {
 }
 
 void TextWindow::ScreenChangeBackgroundColor(int link, uint32_t v) {
-    RgbaColor rgb = SS.backgroundColor;
-    SS.TW.ShowEditControlWithColorPicker(3, rgb);
-    SS.TW.edit.meaning = Edit::BACKGROUND_COLOR;
+    RgbaColor rgb = CORE.backgroundColor;
+    CORE.TW.ShowEditControlWithColorPicker(3, rgb);
+    CORE.TW.edit.meaning = Edit::BACKGROUND_COLOR;
 }
 
 void TextWindow::ShowListOfStyles() {
@@ -488,7 +488,7 @@ void TextWindow::ShowListOfStyles() {
 
     Printf(false, "");
 
-    RgbaColor rgb = SS.backgroundColor;
+    RgbaColor rgb = CORE.backgroundColor;
     Printf(false, "%Ft background color (r, g, b)%E");
     Printf(false, "%Ba   %@, %@, %@ %Fl%D%f%Ll[change]%E",
         rgb.redF(), rgb.greenF(), rgb.blueF(),
@@ -503,13 +503,13 @@ void TextWindow::ShowListOfStyles() {
 void TextWindow::ScreenChangeStyleName(int link, uint32_t v) {
     hStyle hs = { v };
     Style *s = Style::Get(hs);
-    SS.TW.ShowEditControl(12, s->name);
-    SS.TW.edit.style = hs;
-    SS.TW.edit.meaning = Edit::STYLE_NAME;
+    CORE.TW.ShowEditControl(12, s->name);
+    CORE.TW.edit.style = hs;
+    CORE.TW.edit.meaning = Edit::STYLE_NAME;
 }
 
 void TextWindow::ScreenDeleteStyle(int link, uint32_t v) {
-    SS.UndoRemember();
+    CORE.UndoRemember();
     hStyle hs = { v };
     Style *s = SK.style.FindByIdNoOops(hs);
     if(s) {
@@ -517,15 +517,15 @@ void TextWindow::ScreenDeleteStyle(int link, uint32_t v) {
         // And it will get recreated automatically if something is still using
         // the style, so no need to do anything else.
     }
-    SS.TW.GoToScreen(Screen::LIST_OF_STYLES);
-    SS.GW.Invalidate();
+    CORE.TW.GoToScreen(Screen::LIST_OF_STYLES);
+    CORE.GW.Invalidate();
 }
 
 void TextWindow::ScreenChangeStylePatternType(int link, uint32_t v) {
     hStyle hs = { v };
     Style *s = Style::Get(hs);
     s->stippleType = (StipplePattern)(link - 1);
-    SS.GW.persistentDirty = true;
+    CORE.GW.persistentDirty = true;
 }
 
 void TextWindow::ScreenChangeStyleMetric(int link, uint32_t v) {
@@ -565,19 +565,19 @@ void TextWindow::ScreenChangeStyleMetric(int link, uint32_t v) {
     if(units == Style::UnitsAs::PIXELS) {
         edit_value = ssprintf("%.2f", val);
     } else {
-        edit_value = SS.MmToString(val, true);
+        edit_value = CORE.MmToString(val, true);
     }
-    SS.TW.ShowEditControl(col, edit_value);
-    SS.TW.edit.style = hs;
-    SS.TW.edit.meaning = meaning;
+    CORE.TW.ShowEditControl(col, edit_value);
+    CORE.TW.edit.style = hs;
+    CORE.TW.edit.meaning = meaning;
 }
 
 void TextWindow::ScreenChangeStyleTextAngle(int link, uint32_t v) {
     hStyle hs = { v };
     Style *s = Style::Get(hs);
-    SS.TW.ShowEditControl(9, ssprintf("%.2f", s->textAngle));
-    SS.TW.edit.style = hs;
-    SS.TW.edit.meaning = Edit::STYLE_TEXT_ANGLE;
+    CORE.TW.ShowEditControl(9, ssprintf("%.2f", s->textAngle));
+    CORE.TW.edit.style = hs;
+    CORE.TW.edit.meaning = Edit::STYLE_TEXT_ANGLE;
 }
 
 void TextWindow::ScreenChangeStyleColor(int link, uint32_t v) {
@@ -593,13 +593,13 @@ void TextWindow::ScreenChangeStyleColor(int link, uint32_t v) {
         em = Edit::STYLE_FILL_COLOR;
         rgb = s->fillColor;
     } else ssassert(false, "Unexpected link");
-    SS.TW.ShowEditControlWithColorPicker(13, rgb);
-    SS.TW.edit.style = hs;
-    SS.TW.edit.meaning = em;
+    CORE.TW.ShowEditControlWithColorPicker(13, rgb);
+    CORE.TW.edit.style = hs;
+    CORE.TW.edit.meaning = em;
 }
 
 void TextWindow::ScreenChangeStyleYesNo(int link, uint32_t v) {
-    SS.UndoRemember();
+    CORE.UndoRemember();
     hStyle hs = { v };
     Style *s = Style::Get(hs);
     switch(link) {
@@ -607,15 +607,15 @@ void TextWindow::ScreenChangeStyleYesNo(int link, uint32_t v) {
         case 'w':
             if(s->widthAs != Style::UnitsAs::MM) {
                 s->widthAs = Style::UnitsAs::MM;
-                s->width /= SS.GW.scale;
-                s->stippleScale /= SS.GW.scale;
+                s->width /= CORE.GW.scale;
+                s->stippleScale /= CORE.GW.scale;
             }
             break;
         case 'W':
             if(s->widthAs != Style::UnitsAs::PIXELS) {
                 s->widthAs = Style::UnitsAs::PIXELS;
-                s->width *= SS.GW.scale;
-                s->stippleScale *= SS.GW.scale;
+                s->width *= CORE.GW.scale;
+                s->stippleScale *= CORE.GW.scale;
             }
             break;
 
@@ -623,14 +623,14 @@ void TextWindow::ScreenChangeStyleYesNo(int link, uint32_t v) {
         case 'g':
             if(s->textHeightAs != Style::UnitsAs::MM) {
                 s->textHeightAs = Style::UnitsAs::MM;
-                s->textHeight /= SS.GW.scale;
+                s->textHeight /= CORE.GW.scale;
             }
             break;
 
         case 'G':
             if(s->textHeightAs != Style::UnitsAs::PIXELS) {
                 s->textHeightAs = Style::UnitsAs::PIXELS;
-                s->textHeight *= SS.GW.scale;
+                s->textHeight *= CORE.GW.scale;
             }
             break;
 
@@ -674,7 +674,7 @@ void TextWindow::ScreenChangeStyleYesNo(int link, uint32_t v) {
             s->textOrigin = (Style::TextOrigin)((uint32_t)s->textOrigin |  (uint32_t)Style::TextOrigin::TOP);
             break;
     }
-    SS.GW.Invalidate(/*clearPersistent=*/true);
+    CORE.GW.Invalidate(/*clearPersistent=*/true);
 }
 
 bool TextWindow::EditControlDoneForStyles(const std::string &str) {
@@ -683,14 +683,14 @@ bool TextWindow::EditControlDoneForStyles(const std::string &str) {
         case Edit::STYLE_STIPPLE_PERIOD:
         case Edit::STYLE_TEXT_HEIGHT:
         case Edit::STYLE_WIDTH: {
-            SS.UndoRemember();
+            CORE.UndoRemember();
             s = Style::Get(edit.style);
 
             double v;
             Style::UnitsAs units = (edit.meaning == Edit::STYLE_TEXT_HEIGHT) ?
                             s->textHeightAs : s->widthAs;
             if(units == Style::UnitsAs::MM) {
-                v = SS.StringToMm(str);
+                v = CORE.StringToMm(str);
             } else {
                 v = atof(str.c_str());
             }
@@ -705,7 +705,7 @@ bool TextWindow::EditControlDoneForStyles(const std::string &str) {
             break;
         }
         case Edit::STYLE_TEXT_ANGLE:
-            SS.UndoRemember();
+            CORE.UndoRemember();
             s = Style::Get(edit.style);
             s->textAngle = WRAP_SYMMETRIC(atof(str.c_str()), 360);
             break;
@@ -717,15 +717,15 @@ bool TextWindow::EditControlDoneForStyles(const std::string &str) {
             if(sscanf(str.c_str(), "%lf, %lf, %lf", &rgb.x, &rgb.y, &rgb.z)==3) {
                 rgb = rgb.ClampWithin(0, 1);
                 if(edit.meaning == Edit::STYLE_COLOR) {
-                    SS.UndoRemember();
+                    CORE.UndoRemember();
                     s = Style::Get(edit.style);
                     s->color = RGBf(rgb.x, rgb.y, rgb.z);
                 } else if(edit.meaning == Edit::STYLE_FILL_COLOR) {
-                    SS.UndoRemember();
+                    CORE.UndoRemember();
                     s = Style::Get(edit.style);
                     s->fillColor = RGBf(rgb.x, rgb.y, rgb.z);
                 } else {
-                    SS.backgroundColor = RGBf(rgb.x, rgb.y, rgb.z);
+                    CORE.backgroundColor = RGBf(rgb.x, rgb.y, rgb.z);
                 }
             } else {
                 Error(_("Bad format: specify color as r, g, b"));
@@ -736,7 +736,7 @@ bool TextWindow::EditControlDoneForStyles(const std::string &str) {
             if(str.empty()) {
                 Error(_("Style name cannot be empty"));
             } else {
-                SS.UndoRemember();
+                CORE.UndoRemember();
                 s = Style::Get(edit.style);
                 s->name = str;
             }
@@ -744,7 +744,7 @@ bool TextWindow::EditControlDoneForStyles(const std::string &str) {
 
         default: return false;
     }
-    SS.GW.persistentDirty = true;
+    CORE.GW.persistentDirty = true;
     return true;
 }
 
@@ -776,7 +776,7 @@ void TextWindow::ShowStyleInfo() {
             (s->h.v < Style::FIRST_CUSTOM) ? 'w' : 'W');
     } else {
         Printf(false, "   %Ftwidth%E %s %D%f%Lp%Fl[change]%E",
-            SS.MmToString(s->width).c_str(),
+            CORE.MmToString(s->width).c_str(),
             s->h.v, &ScreenChangeStyleMetric,
             (s->h.v < Style::FIRST_CUSTOM) ? 'w' : 'W');
     }
@@ -787,7 +787,7 @@ void TextWindow::ShowStyleInfo() {
             s->h.v, &ScreenChangeStyleMetric, 's');
     } else {
         Printf(false, "%Ba   %Ftstipple width%E %s %D%f%Lp%Fl[change]%E",
-            SS.MmToString(s->stippleScale).c_str(),
+            CORE.MmToString(s->stippleScale).c_str(),
             s->h.v, &ScreenChangeStyleMetric, 's');
     }
 
@@ -802,7 +802,7 @@ void TextWindow::ShowStyleInfo() {
             widthpx ? RADIO_TRUE : RADIO_FALSE,
             s->h.v, &ScreenChangeStyleYesNo,
             !widthpx ? RADIO_TRUE : RADIO_FALSE,
-            SS.UnitName());
+            CORE.UnitName());
     }
 
     Printf(false,"%Ba   %Ftstipple type:%E");
@@ -870,7 +870,7 @@ void TextWindow::ShowStyleInfo() {
             "[change]");
     } else {
         Printf(false, "%Ba   %Ftheight %E%s %D%f%Lt%Fl%s%E",
-            SS.MmToString(s->textHeight).c_str(),
+            CORE.MmToString(s->textHeight).c_str(),
             s->h.v, &ScreenChangeStyleMetric,
             "[change]");
     }
@@ -886,7 +886,7 @@ void TextWindow::ShowStyleInfo() {
             textHeightpx ? RADIO_TRUE : RADIO_FALSE,
             s->h.v, &ScreenChangeStyleYesNo,
             !textHeightpx ? RADIO_TRUE : RADIO_FALSE,
-            SS.UnitName());
+            CORE.UnitName());
     }
 
     if(s->h.v >= Style::FIRST_CUSTOM) {

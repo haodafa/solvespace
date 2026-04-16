@@ -86,127 +86,127 @@ void SolveSpaceUI::NewFile() {
     CreateDefaultDrawingGroup();
 }
 
-const SolveSpaceUI::SaveTable SolveSpaceUI::SAVED[] = {
-    { 'g',  "Group.h.v",                'x',    &(SS.sv.g.h.v)                },
-    { 'g',  "Group.type",               'd',    &(SS.sv.g.type)               },
-    { 'g',  "Group.order",              'd',    &(SS.sv.g.order)              },
-    { 'g',  "Group.name",               'S',    &(SS.sv.g.name)               },
-    { 'g',  "Group.activeWorkplane.v",  'x',    &(SS.sv.g.activeWorkplane.v)  },
-    { 'g',  "Group.opA.v",              'x',    &(SS.sv.g.opA.v)              },
-    { 'g',  "Group.opB.v",              'x',    &(SS.sv.g.opB.v)              },
-    { 'g',  "Group.valA",               'f',    &(SS.sv.g.valA)               },
-    { 'g',  "Group.valB",               'f',    &(SS.sv.g.valB)               },
-    { 'g',  "Group.valC",               'f',    &(SS.sv.g.valC)               },
-    { 'g',  "Group.color",              'c',    &(SS.sv.g.color)              },
-    { 'g',  "Group.subtype",            'd',    &(SS.sv.g.subtype)            },
-    { 'g',  "Group.skipFirst",          'b',    &(SS.sv.g.skipFirst)          },
-    { 'g',  "Group.meshCombine",        'd',    &(SS.sv.g.meshCombine)        },
-    { 'g',  "Group.forceToMesh",        'd',    &(SS.sv.g.forceToMesh)        },
-    { 'g',  "Group.predef.q.w",         'f',    &(SS.sv.g.predef.q.w)         },
-    { 'g',  "Group.predef.q.vx",        'f',    &(SS.sv.g.predef.q.vx)        },
-    { 'g',  "Group.predef.q.vy",        'f',    &(SS.sv.g.predef.q.vy)        },
-    { 'g',  "Group.predef.q.vz",        'f',    &(SS.sv.g.predef.q.vz)        },
-    { 'g',  "Group.predef.origin.v",    'x',    &(SS.sv.g.predef.origin.v)    },
-    { 'g',  "Group.predef.entityB.v",   'x',    &(SS.sv.g.predef.entityB.v)   },
-    { 'g',  "Group.predef.entityC.v",   'x',    &(SS.sv.g.predef.entityC.v)   },
-    { 'g',  "Group.predef.swapUV",      'b',    &(SS.sv.g.predef.swapUV)      },
-    { 'g',  "Group.predef.negateU",     'b',    &(SS.sv.g.predef.negateU)     },
-    { 'g',  "Group.predef.negateV",     'b',    &(SS.sv.g.predef.negateV)     },
-    { 'g',  "Group.visible",            'b',    &(SS.sv.g.visible)            },
-    { 'g',  "Group.suppress",           'b',    &(SS.sv.g.suppress)           },
-    { 'g',  "Group.relaxConstraints",   'b',    &(SS.sv.g.relaxConstraints)   },
-    { 'g',  "Group.allowRedundant",     'b',    &(SS.sv.g.allowRedundant)     },
-    { 'g',  "Group.allDimsReference",   'b',    &(SS.sv.g.allDimsReference)   },
-    { 'g',  "Group.scale",              'f',    &(SS.sv.g.scale)              },
-    { 'g',  "Group.remap",              'M',    &(SS.sv.g.remap)              },
+const SolveSpaceCore::SaveTable SolveSpaceCore::SAVED[] = {
+    { 'g',  "Group.h.v",                'x',    &(CORE.sv.g.h.v)                },
+    { 'g',  "Group.type",               'd',    &(CORE.sv.g.type)               },
+    { 'g',  "Group.order",              'd',    &(CORE.sv.g.order)              },
+    { 'g',  "Group.name",               'S',    &(CORE.sv.g.name)               },
+    { 'g',  "Group.activeWorkplane.v",  'x',    &(CORE.sv.g.activeWorkplane.v)  },
+    { 'g',  "Group.opA.v",              'x',    &(CORE.sv.g.opA.v)              },
+    { 'g',  "Group.opB.v",              'x',    &(CORE.sv.g.opB.v)              },
+    { 'g',  "Group.valA",               'f',    &(CORE.sv.g.valA)               },
+    { 'g',  "Group.valB",               'f',    &(CORE.sv.g.valB)               },
+    { 'g',  "Group.valC",               'f',    &(CORE.sv.g.valC)               },
+    { 'g',  "Group.color",              'c',    &(CORE.sv.g.color)              },
+    { 'g',  "Group.subtype",            'd',    &(CORE.sv.g.subtype)            },
+    { 'g',  "Group.skipFirst",          'b',    &(CORE.sv.g.skipFirst)          },
+    { 'g',  "Group.meshCombine",        'd',    &(CORE.sv.g.meshCombine)        },
+    { 'g',  "Group.forceToMesh",        'd',    &(CORE.sv.g.forceToMesh)        },
+    { 'g',  "Group.predef.q.w",         'f',    &(CORE.sv.g.predef.q.w)         },
+    { 'g',  "Group.predef.q.vx",        'f',    &(CORE.sv.g.predef.q.vx)        },
+    { 'g',  "Group.predef.q.vy",        'f',    &(CORE.sv.g.predef.q.vy)        },
+    { 'g',  "Group.predef.q.vz",        'f',    &(CORE.sv.g.predef.q.vz)        },
+    { 'g',  "Group.predef.origin.v",    'x',    &(CORE.sv.g.predef.origin.v)    },
+    { 'g',  "Group.predef.entityB.v",   'x',    &(CORE.sv.g.predef.entityB.v)   },
+    { 'g',  "Group.predef.entityC.v",   'x',    &(CORE.sv.g.predef.entityC.v)   },
+    { 'g',  "Group.predef.swapUV",      'b',    &(CORE.sv.g.predef.swapUV)      },
+    { 'g',  "Group.predef.negateU",     'b',    &(CORE.sv.g.predef.negateU)     },
+    { 'g',  "Group.predef.negateV",     'b',    &(CORE.sv.g.predef.negateV)     },
+    { 'g',  "Group.visible",            'b',    &(CORE.sv.g.visible)            },
+    { 'g',  "Group.suppress",           'b',    &(CORE.sv.g.suppress)           },
+    { 'g',  "Group.relaxConstraints",   'b',    &(CORE.sv.g.relaxConstraints)   },
+    { 'g',  "Group.allowRedundant",     'b',    &(CORE.sv.g.allowRedundant)     },
+    { 'g',  "Group.allDimsReference",   'b',    &(CORE.sv.g.allDimsReference)   },
+    { 'g',  "Group.scale",              'f',    &(CORE.sv.g.scale)              },
+    { 'g',  "Group.remap",              'M',    &(CORE.sv.g.remap)              },
     { 'g',  "Group.impFile",            'i',    NULL                          },
-    { 'g',  "Group.impFileRel",         'P',    &(SS.sv.g.linkFile)           },
+    { 'g',  "Group.impFileRel",         'P',    &(CORE.sv.g.linkFile)           },
 
-    { 'p',  "Param.h.v.",               'x',    &(SS.sv.p.h.v)                },
-    { 'p',  "Param.val",                'f',    &(SS.sv.p.val)                },
+    { 'p',  "Param.h.v.",               'x',    &(CORE.sv.p.h.v)                },
+    { 'p',  "Param.val",                'f',    &(CORE.sv.p.val)                },
 
-    { 'r',  "Request.h.v",              'x',    &(SS.sv.r.h.v)                },
-    { 'r',  "Request.type",             'd',    &(SS.sv.r.type)               },
-    { 'r',  "Request.extraPoints",      'd',    &(SS.sv.r.extraPoints)        },
-    { 'r',  "Request.workplane.v",      'x',    &(SS.sv.r.workplane.v)        },
-    { 'r',  "Request.group.v",          'x',    &(SS.sv.r.group.v)            },
-    { 'r',  "Request.construction",     'b',    &(SS.sv.r.construction)       },
-    { 'r',  "Request.style",            'x',    &(SS.sv.r.style)              },
-    { 'r',  "Request.str",              'S',    &(SS.sv.r.str)                },
-    { 'r',  "Request.font",             'S',    &(SS.sv.r.font)               },
-    { 'r',  "Request.file",             'P',    &(SS.sv.r.file)               },
-    { 'r',  "Request.aspectRatio",      'f',    &(SS.sv.r.aspectRatio)        },
+    { 'r',  "Request.h.v",              'x',    &(CORE.sv.r.h.v)                },
+    { 'r',  "Request.type",             'd',    &(CORE.sv.r.type)               },
+    { 'r',  "Request.extraPoints",      'd',    &(CORE.sv.r.extraPoints)        },
+    { 'r',  "Request.workplane.v",      'x',    &(CORE.sv.r.workplane.v)        },
+    { 'r',  "Request.group.v",          'x',    &(CORE.sv.r.group.v)            },
+    { 'r',  "Request.construction",     'b',    &(CORE.sv.r.construction)       },
+    { 'r',  "Request.style",            'x',    &(CORE.sv.r.style)              },
+    { 'r',  "Request.str",              'S',    &(CORE.sv.r.str)                },
+    { 'r',  "Request.font",             'S',    &(CORE.sv.r.font)               },
+    { 'r',  "Request.file",             'P',    &(CORE.sv.r.file)               },
+    { 'r',  "Request.aspectRatio",      'f',    &(CORE.sv.r.aspectRatio)        },
 
-    { 'e',  "Entity.h.v",               'x',    &(SS.sv.e.h.v)                },
-    { 'e',  "Entity.type",              'd',    &(SS.sv.e.type)               },
-    { 'e',  "Entity.construction",      'b',    &(SS.sv.e.construction)       },
-    { 'e',  "Entity.style",             'x',    &(SS.sv.e.style)              },
-    { 'e',  "Entity.str",               'S',    &(SS.sv.e.str)                },
-    { 'e',  "Entity.font",              'S',    &(SS.sv.e.font)               },
-    { 'e',  "Entity.file",              'P',    &(SS.sv.e.file)               },
-    { 'e',  "Entity.point[0].v",        'x',    &(SS.sv.e.point[0].v)         },
-    { 'e',  "Entity.point[1].v",        'x',    &(SS.sv.e.point[1].v)         },
-    { 'e',  "Entity.point[2].v",        'x',    &(SS.sv.e.point[2].v)         },
-    { 'e',  "Entity.point[3].v",        'x',    &(SS.sv.e.point[3].v)         },
-    { 'e',  "Entity.point[4].v",        'x',    &(SS.sv.e.point[4].v)         },
-    { 'e',  "Entity.point[5].v",        'x',    &(SS.sv.e.point[5].v)         },
-    { 'e',  "Entity.point[6].v",        'x',    &(SS.sv.e.point[6].v)         },
-    { 'e',  "Entity.point[7].v",        'x',    &(SS.sv.e.point[7].v)         },
-    { 'e',  "Entity.point[8].v",        'x',    &(SS.sv.e.point[8].v)         },
-    { 'e',  "Entity.point[9].v",        'x',    &(SS.sv.e.point[9].v)         },
-    { 'e',  "Entity.point[10].v",       'x',    &(SS.sv.e.point[10].v)        },
-    { 'e',  "Entity.point[11].v",       'x',    &(SS.sv.e.point[11].v)        },
-    { 'e',  "Entity.extraPoints",       'd',    &(SS.sv.e.extraPoints)        },
-    { 'e',  "Entity.normal.v",          'x',    &(SS.sv.e.normal.v)           },
-    { 'e',  "Entity.distance.v",        'x',    &(SS.sv.e.distance.v)         },
-    { 'e',  "Entity.workplane.v",       'x',    &(SS.sv.e.workplane.v)        },
-    { 'e',  "Entity.actPoint.x",        'f',    &(SS.sv.e.actPoint.x)         },
-    { 'e',  "Entity.actPoint.y",        'f',    &(SS.sv.e.actPoint.y)         },
-    { 'e',  "Entity.actPoint.z",        'f',    &(SS.sv.e.actPoint.z)         },
-    { 'e',  "Entity.actNormal.w",       'f',    &(SS.sv.e.actNormal.w)        },
-    { 'e',  "Entity.actNormal.vx",      'f',    &(SS.sv.e.actNormal.vx)       },
-    { 'e',  "Entity.actNormal.vy",      'f',    &(SS.sv.e.actNormal.vy)       },
-    { 'e',  "Entity.actNormal.vz",      'f',    &(SS.sv.e.actNormal.vz)       },
-    { 'e',  "Entity.actDistance",       'f',    &(SS.sv.e.actDistance)        },
-    { 'e',  "Entity.actVisible",        'b',    &(SS.sv.e.actVisible),        },
+    { 'e',  "Entity.h.v",               'x',    &(CORE.sv.e.h.v)                },
+    { 'e',  "Entity.type",              'd',    &(CORE.sv.e.type)               },
+    { 'e',  "Entity.construction",      'b',    &(CORE.sv.e.construction)       },
+    { 'e',  "Entity.style",             'x',    &(CORE.sv.e.style)              },
+    { 'e',  "Entity.str",               'S',    &(CORE.sv.e.str)                },
+    { 'e',  "Entity.font",              'S',    &(CORE.sv.e.font)               },
+    { 'e',  "Entity.file",              'P',    &(CORE.sv.e.file)               },
+    { 'e',  "Entity.point[0].v",        'x',    &(CORE.sv.e.point[0].v)         },
+    { 'e',  "Entity.point[1].v",        'x',    &(CORE.sv.e.point[1].v)         },
+    { 'e',  "Entity.point[2].v",        'x',    &(CORE.sv.e.point[2].v)         },
+    { 'e',  "Entity.point[3].v",        'x',    &(CORE.sv.e.point[3].v)         },
+    { 'e',  "Entity.point[4].v",        'x',    &(CORE.sv.e.point[4].v)         },
+    { 'e',  "Entity.point[5].v",        'x',    &(CORE.sv.e.point[5].v)         },
+    { 'e',  "Entity.point[6].v",        'x',    &(CORE.sv.e.point[6].v)         },
+    { 'e',  "Entity.point[7].v",        'x',    &(CORE.sv.e.point[7].v)         },
+    { 'e',  "Entity.point[8].v",        'x',    &(CORE.sv.e.point[8].v)         },
+    { 'e',  "Entity.point[9].v",        'x',    &(CORE.sv.e.point[9].v)         },
+    { 'e',  "Entity.point[10].v",       'x',    &(CORE.sv.e.point[10].v)        },
+    { 'e',  "Entity.point[11].v",       'x',    &(CORE.sv.e.point[11].v)        },
+    { 'e',  "Entity.extraPoints",       'd',    &(CORE.sv.e.extraPoints)        },
+    { 'e',  "Entity.normal.v",          'x',    &(CORE.sv.e.normal.v)           },
+    { 'e',  "Entity.distance.v",        'x',    &(CORE.sv.e.distance.v)         },
+    { 'e',  "Entity.workplane.v",       'x',    &(CORE.sv.e.workplane.v)        },
+    { 'e',  "Entity.actPoint.x",        'f',    &(CORE.sv.e.actPoint.x)         },
+    { 'e',  "Entity.actPoint.y",        'f',    &(CORE.sv.e.actPoint.y)         },
+    { 'e',  "Entity.actPoint.z",        'f',    &(CORE.sv.e.actPoint.z)         },
+    { 'e',  "Entity.actNormal.w",       'f',    &(CORE.sv.e.actNormal.w)        },
+    { 'e',  "Entity.actNormal.vx",      'f',    &(CORE.sv.e.actNormal.vx)       },
+    { 'e',  "Entity.actNormal.vy",      'f',    &(CORE.sv.e.actNormal.vy)       },
+    { 'e',  "Entity.actNormal.vz",      'f',    &(CORE.sv.e.actNormal.vz)       },
+    { 'e',  "Entity.actDistance",       'f',    &(CORE.sv.e.actDistance)        },
+    { 'e',  "Entity.actVisible",        'b',    &(CORE.sv.e.actVisible),        },
 
 
-    { 'c',  "Constraint.h.v",           'x',    &(SS.sv.c.h.v)                },
-    { 'c',  "Constraint.type",          'd',    &(SS.sv.c.type)               },
-    { 'c',  "Constraint.group.v",       'x',    &(SS.sv.c.group.v)            },
-    { 'c',  "Constraint.workplane.v",   'x',    &(SS.sv.c.workplane.v)        },
-    { 'c',  "Constraint.valA",          'f',    &(SS.sv.c.valA)               },
-    { 'c',  "Constraint.valP.v",        'x',    &(SS.sv.c.valP.v)             },
-    { 'c',  "Constraint.ptA.v",         'x',    &(SS.sv.c.ptA.v)              },
-    { 'c',  "Constraint.ptB.v",         'x',    &(SS.sv.c.ptB.v)              },
-    { 'c',  "Constraint.entityA.v",     'x',    &(SS.sv.c.entityA.v)          },
-    { 'c',  "Constraint.entityB.v",     'x',    &(SS.sv.c.entityB.v)          },
-    { 'c',  "Constraint.entityC.v",     'x',    &(SS.sv.c.entityC.v)          },
-    { 'c',  "Constraint.entityD.v",     'x',    &(SS.sv.c.entityD.v)          },
-    { 'c',  "Constraint.other",         'b',    &(SS.sv.c.other)              },
-    { 'c',  "Constraint.other2",        'b',    &(SS.sv.c.other2)             },
-    { 'c',  "Constraint.reference",     'b',    &(SS.sv.c.reference)          },
-    { 'c',  "Constraint.comment",       'S',    &(SS.sv.c.comment)            },
-    { 'c',  "Constraint.disp.offset.x", 'f',    &(SS.sv.c.disp.offset.x)      },
-    { 'c',  "Constraint.disp.offset.y", 'f',    &(SS.sv.c.disp.offset.y)      },
-    { 'c',  "Constraint.disp.offset.z", 'f',    &(SS.sv.c.disp.offset.z)      },
-    { 'c',  "Constraint.disp.style",    'x',    &(SS.sv.c.disp.style)         },
+    { 'c',  "Constraint.h.v",           'x',    &(CORE.sv.c.h.v)                },
+    { 'c',  "Constraint.type",          'd',    &(CORE.sv.c.type)               },
+    { 'c',  "Constraint.group.v",       'x',    &(CORE.sv.c.group.v)            },
+    { 'c',  "Constraint.workplane.v",   'x',    &(CORE.sv.c.workplane.v)        },
+    { 'c',  "Constraint.valA",          'f',    &(CORE.sv.c.valA)               },
+    { 'c',  "Constraint.valP.v",        'x',    &(CORE.sv.c.valP.v)             },
+    { 'c',  "Constraint.ptA.v",         'x',    &(CORE.sv.c.ptA.v)              },
+    { 'c',  "Constraint.ptB.v",         'x',    &(CORE.sv.c.ptB.v)              },
+    { 'c',  "Constraint.entityA.v",     'x',    &(CORE.sv.c.entityA.v)          },
+    { 'c',  "Constraint.entityB.v",     'x',    &(CORE.sv.c.entityB.v)          },
+    { 'c',  "Constraint.entityC.v",     'x',    &(CORE.sv.c.entityC.v)          },
+    { 'c',  "Constraint.entityD.v",     'x',    &(CORE.sv.c.entityD.v)          },
+    { 'c',  "Constraint.other",         'b',    &(CORE.sv.c.other)              },
+    { 'c',  "Constraint.other2",        'b',    &(CORE.sv.c.other2)             },
+    { 'c',  "Constraint.reference",     'b',    &(CORE.sv.c.reference)          },
+    { 'c',  "Constraint.comment",       'S',    &(CORE.sv.c.comment)            },
+    { 'c',  "Constraint.disp.offset.x", 'f',    &(CORE.sv.c.disp.offset.x)      },
+    { 'c',  "Constraint.disp.offset.y", 'f',    &(CORE.sv.c.disp.offset.y)      },
+    { 'c',  "Constraint.disp.offset.z", 'f',    &(CORE.sv.c.disp.offset.z)      },
+    { 'c',  "Constraint.disp.style",    'x',    &(CORE.sv.c.disp.style)         },
 
-    { 's',  "Style.h.v",                'x',    &(SS.sv.s.h.v)                },
-    { 's',  "Style.name",               'S',    &(SS.sv.s.name)               },
-    { 's',  "Style.width",              'f',    &(SS.sv.s.width)              },
-    { 's',  "Style.widthAs",            'd',    &(SS.sv.s.widthAs)            },
-    { 's',  "Style.textHeight",         'f',    &(SS.sv.s.textHeight)         },
-    { 's',  "Style.textHeightAs",       'd',    &(SS.sv.s.textHeightAs)       },
-    { 's',  "Style.textAngle",          'f',    &(SS.sv.s.textAngle)          },
-    { 's',  "Style.textOrigin",         'x',    &(SS.sv.s.textOrigin)         },
-    { 's',  "Style.color",              'c',    &(SS.sv.s.color)              },
-    { 's',  "Style.fillColor",          'c',    &(SS.sv.s.fillColor)          },
-    { 's',  "Style.filled",             'b',    &(SS.sv.s.filled)             },
-    { 's',  "Style.visible",            'b',    &(SS.sv.s.visible)            },
-    { 's',  "Style.exportable",         'b',    &(SS.sv.s.exportable)         },
-    { 's',  "Style.stippleType",        'd',    &(SS.sv.s.stippleType)        },
-    { 's',  "Style.stippleScale",       'f',    &(SS.sv.s.stippleScale)       },
+    { 's',  "Style.h.v",                'x',    &(CORE.sv.s.h.v)                },
+    { 's',  "Style.name",               'S',    &(CORE.sv.s.name)               },
+    { 's',  "Style.width",              'f',    &(CORE.sv.s.width)              },
+    { 's',  "Style.widthAs",            'd',    &(CORE.sv.s.widthAs)            },
+    { 's',  "Style.textHeight",         'f',    &(CORE.sv.s.textHeight)         },
+    { 's',  "Style.textHeightAs",       'd',    &(CORE.sv.s.textHeightAs)       },
+    { 's',  "Style.textAngle",          'f',    &(CORE.sv.s.textAngle)          },
+    { 's',  "Style.textOrigin",         'x',    &(CORE.sv.s.textOrigin)         },
+    { 's',  "Style.color",              'c',    &(CORE.sv.s.color)              },
+    { 's',  "Style.fillColor",          'c',    &(CORE.sv.s.fillColor)          },
+    { 's',  "Style.filled",             'b',    &(CORE.sv.s.filled)             },
+    { 's',  "Style.visible",            'b',    &(CORE.sv.s.visible)            },
+    { 's',  "Style.exportable",         'b',    &(CORE.sv.s.exportable)         },
+    { 's',  "Style.stippleType",        'd',    &(CORE.sv.s.stippleType)        },
+    { 's',  "Style.stippleScale",       'f',    &(CORE.sv.s.stippleScale)       },
 
     { 0, NULL, 0, NULL }
 };
@@ -222,7 +222,7 @@ struct SAVEDptr {
     uint32_t  &x() { return *((uint32_t *)this); }
 };
 
-void SolveSpaceUI::SaveUsingTable(const Platform::Path &filename, int type) {
+void SolveSpaceCore::SaveUsingTable(const Platform::Path &filename, int type) {
     int i;
     for(i = 0; SAVED[i].type != 0; i++) {
         if(SAVED[i].type != type) continue;
@@ -279,7 +279,7 @@ void SolveSpaceUI::SaveUsingTable(const Platform::Path &filename, int type) {
     }
 }
 
-bool SolveSpaceUI::SaveToFile(const Platform::Path &filename) {
+bool SolveSpaceCore::SaveToFile(const Platform::Path &filename) {
     // Make sure all the entities are regenerated up to date, since they will be exported.
     SS.ScheduleShowTW();
     SS.GenerateAll(SolveSpaceUI::Generate::ALL);
@@ -406,7 +406,7 @@ bool SolveSpaceUI::SaveToFile(const Platform::Path &filename) {
     return true;
 }
 
-void SolveSpaceUI::LoadUsingTable(const Platform::Path &filename, char *key, char *val) {
+void SolveSpaceCore::LoadUsingTable(const Platform::Path &filename, char *key, char *val) {
     int i;
     for(i = 0; SAVED[i].type != 0; i++) {
         if(strcmp(SAVED[i].desc, key)==0) {
@@ -472,7 +472,7 @@ void SolveSpaceUI::LoadUsingTable(const Platform::Path &filename, char *key, cha
     }
 }
 
-bool SolveSpaceUI::LoadFromFile(const Platform::Path &filename, bool canCancel) {
+bool SolveSpaceCore::LoadFromFile(const Platform::Path &filename, bool canCancel) {
     bool fileIsEmpty = true;
     allConsistent = false;
     fileLoadError = false;
@@ -574,7 +574,7 @@ bool SolveSpaceUI::LoadFromFile(const Platform::Path &filename, bool canCancel) 
     return true;
 }
 
-void SolveSpaceUI::UpgradeLegacyData() {
+void SolveSpaceCore::UpgradeLegacyData() {
     for(Request &r : SK.request) {
         switch(r.type) {
             // TTF text requests saved in versions prior to 3.0 only have two
@@ -713,7 +713,7 @@ void SolveSpaceUI::UpgradeLegacyData() {
     oldParam.Clear();
 }
 
-bool SolveSpaceUI::LoadEntitiesFromFile(const Platform::Path &filename, EntityList *le,
+bool SolveSpaceCore::LoadEntitiesFromFile(const Platform::Path &filename, EntityList *le,
                                         SMesh *m, SShell *sh)
 {
     if(strcmp(filename.Extension().c_str(), "emn")==0) {
@@ -729,7 +729,7 @@ bool SolveSpaceUI::LoadEntitiesFromFile(const Platform::Path &filename, EntityLi
     }
 }
 
-bool SolveSpaceUI::LoadEntitiesFromSlvs(const Platform::Path &filename, EntityList *le,
+bool SolveSpaceCore::LoadEntitiesFromSlvs(const Platform::Path &filename, EntityList *le,
                                         SMesh *m, SShell *sh)
 {
     SSurface srf = {};
@@ -871,7 +871,7 @@ bool SolveSpaceUI::LoadEntitiesFromSlvs(const Platform::Path &filename, EntityLi
 
 static Platform::MessageDialog::Response LocateImportedFile(const Platform::Path &filename,
                                                             bool canCancel) {
-    Platform::MessageDialogRef dialog = CreateMessageDialog(SS.GW.window);
+    Platform::MessageDialogRef dialog = CreateMessageDialog(CORE.GW.window);
 
     using Platform::MessageDialog;
     dialog->SetType(MessageDialog::Type::QUESTION);
@@ -892,7 +892,7 @@ static Platform::MessageDialog::Response LocateImportedFile(const Platform::Path
     return dialog->RunModal();
 }
 
-bool SolveSpaceUI::ReloadAllLinked(const Platform::Path &saveFile, bool canCancel) {
+bool SolveSpaceCore::ReloadAllLinked(const Platform::Path &saveFile, bool canCancel) {
     Platform::SettingsRef settings = Platform::GetSettings();
 
     std::map<Platform::Path, Platform::Path, Platform::PathLess> linkMap;
@@ -928,7 +928,7 @@ try_again:
             const auto linkFileRelative = g.linkFile.RelativeTo(saveFile);
             switch(LocateImportedFile(linkFileRelative, canCancel)) {
                 case Platform::MessageDialog::Response::YES: {
-                    Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(SS.GW.window);
+                    Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(CORE.GW.window);
                     dialog->AddFilters(Platform::SolveSpaceLinkFileFilters);
                     dialog->ThawChoices(settings, "LinkSketch");
                     dialog->SuggestFilename(linkFileRelative);
@@ -1005,7 +1005,7 @@ bool SolveSpaceUI::ReloadLinkedImage(const Platform::Path &saveFile,
     }
 
     if(promptOpenFile) {
-        Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(SS.GW.window);
+        Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(CORE.GW.window);
         dialog->AddFilters(Platform::RasterFileFilters);
         dialog->ThawChoices(settings, "LinkImage");
         dialog->SuggestFilename(filename->RelativeTo(saveFile));

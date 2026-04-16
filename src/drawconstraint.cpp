@@ -13,20 +13,20 @@ namespace SolveSpace {
 std::string Constraint::Label() const {
     std::string result;
     if(type == Type::ANGLE) {
-        result = SS.DegreeToString(valA) + "°";
+        result = CORE.DegreeToString(valA) + "°";
     } else if(type == Type::LENGTH_RATIO || type == Type::ARC_ARC_LEN_RATIO || type == Type::ARC_LINE_LEN_RATIO) {
         result = ssprintf("%.3f:1", valA);
     } else if(type == Type::COMMENT) {
         result = comment;
     } else if(type == Type::DIAMETER) {
         if(!other) {
-            result = "⌀" + SS.MmToStringSI(valA);
+            result = "⌀" + CORE.MmToStringSI(valA);
         } else {
-            result = "R" + SS.MmToStringSI(valA / 2);
+            result = "R" + CORE.MmToStringSI(valA / 2);
         }
     } else {
         // valA has units of distance
-        result = SS.MmToStringSI(fabs(valA));
+        result = CORE.MmToStringSI(fabs(valA));
     }
     if(reference) {
         result += " REF";
@@ -451,11 +451,11 @@ void Constraint::DoArcForAngle(Canvas *canvas, Canvas::hStroke hcs,
 }
 
 bool Constraint::IsVisible() const {
-    if(SS.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_NOSHOW) 
+    if(CORE.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_NOSHOW) 
         return false;
     bool isDim = false;
 
-    if(SS.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_SHOW_DIM)
+    if(CORE.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_SHOW_DIM)
         switch(type) {
         case ConstraintBase::Type::ANGLE:
         case ConstraintBase::Type::DIAMETER:
@@ -466,14 +466,14 @@ bool Constraint::IsVisible() const {
         default:;
         }
 
-    if(SS.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_SHOW_ALL || isDim ) {
+    if(CORE.GW.showConstraints == GraphicsWindow::ShowConstraintMode::SCM_SHOW_ALL || isDim ) {
         Group *g = SK.GetGroup(group);
         // If the group is hidden, then the constraints are hidden and not
         // able to be selected.
         if(!(g->visible)) return false;
         // And likewise if the group is not the active group; except for comments
         // with an assigned style.
-        if(g->h != SS.GW.activeGroup && !(type == Type::COMMENT && disp.style.v)) {
+        if(g->h != CORE.GW.activeGroup && !(type == Type::COMMENT && disp.style.v)) {
             return false;
         }
         if(disp.style.v) {

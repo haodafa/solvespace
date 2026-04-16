@@ -30,12 +30,12 @@ void GraphicsWindow::RemoveConstraintsForPointBeingDeleted(hEntity hpt) {
     for(auto &c : SK.constraint) {
         if(c.ptA == hpt || c.ptB == hpt) {
             c.tag = 1;
-            (SS.deleted.constraints)++;
+            (CORE.deleted.constraints)++;
             if(c.type != Constraint::Type::POINTS_COINCIDENT &&
                c.type != Constraint::Type::HORIZONTAL &&
                c.type != Constraint::Type::VERTICAL)
             {
-                (SS.deleted.nonTrivialConstraints)++;
+                (CORE.deleted.nonTrivialConstraints)++;
             }
         }
     }
@@ -50,7 +50,7 @@ void GraphicsWindow::RemoveConstraintsForPointBeingDeleted(hEntity hpt) {
 //-----------------------------------------------------------------------------
 void GraphicsWindow::FixConstraintsForRequestBeingDeleted(hRequest hr) {
     Request *r = SK.GetRequest(hr);
-    if(r->group != SS.GW.activeGroup) return;
+    if(r->group != CORE.GW.activeGroup) return;
 
     for(Entity &e : SK.entity) {
         if(!(e.h.isFromRequest())) continue;
@@ -73,7 +73,7 @@ void GraphicsWindow::FixConstraintsForPointBeingDeleted(hEntity hpt) {
     SK.constraint.ClearTags();
     for(Constraint &c : SK.constraint) {
         if(c.type != Constraint::Type::POINTS_COINCIDENT) continue;
-        if(c.group != SS.GW.activeGroup) continue;
+        if(c.group != CORE.GW.activeGroup) continue;
 
         if(c.ptA == hpt) {
             ld.Add(&(c.ptB));
@@ -179,7 +179,7 @@ void GraphicsWindow::ParametricCurve::CreateRequestTrimmedTo(double t,
             SK.GetEntity(e->point[i])->PointForceTo(PointAt(t));
             ConstrainPointIfCoincident(e->point[i]);
         } else {
-            hr = SS.GW.AddRequest(Request::Type::LINE_SEGMENT, /*rememberForUndo=*/false),
+            hr = CORE.GW.AddRequest(Request::Type::LINE_SEGMENT, /*rememberForUndo=*/false),
             e = SK.GetEntity(hr.entity(0));
             SK.GetEntity(e->point[0])->PointForceTo(PointAt(t));
             SK.GetEntity(e->point[1])->PointForceTo(PointAt(1));
@@ -198,7 +198,7 @@ void GraphicsWindow::ParametricCurve::CreateRequestTrimmedTo(double t,
             SK.GetEntity(e->point[i])->PointForceTo(PointAt(t));
             ConstrainPointIfCoincident(e->point[i]);
         } else {
-            hr = SS.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false),
+            hr = CORE.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false),
             e = SK.GetEntity(hr.entity(0));
             SK.GetEntity(e->point[0])->PointForceTo(p0);
             if(dtheta > 0) {
@@ -345,8 +345,8 @@ void GraphicsWindow::MakeTangentArc() {
         double dot = (t0.WithMagnitude(1)).Dot(t1.WithMagnitude(1));
         double theta = acos(dot);
 
-        if(SS.tangentArcManual) {
-            r = SS.tangentArcRadius;
+        if(CORE.tangentArcManual) {
+            r = CORE.tangentArcRadius;
         } else {
             r = 200/scale;
             // Set the radius so that no more than one third of the
@@ -403,9 +403,9 @@ void GraphicsWindow::MakeTangentArc() {
         center = center.Plus(v0inter.Cross(wn).WithMagnitude(r));
     }
 
-    SS.UndoRemember();
+    CORE.UndoRemember();
 
-    if (SS.tangentArcModify) {
+    if (CORE.tangentArcModify) {
         // Delete the coincident constraint for the removed point.
         SK.constraint.ClearTags();
         for(i = 0; i < SK.constraint.n; i++) {
@@ -437,9 +437,9 @@ void GraphicsWindow::MakeTangentArc() {
     earc = NULL;
 
     // Modify or duplicate the original entities and connect them to the tangent arc.
-    pc[0].CreateRequestTrimmedTo(t[0], SS.tangentArcModify,
+    pc[0].CreateRequestTrimmedTo(t[0], CORE.tangentArcModify,
                 hent[0], hearc, /*arcFinish=*/(b == 1), pointf[0]);
-    pc[1].CreateRequestTrimmedTo(t[1], SS.tangentArcModify,
+    pc[1].CreateRequestTrimmedTo(t[1], CORE.tangentArcModify,
                 hent[1], hearc, /*arcFinish=*/(a == 1), pointf[1]);
 }
 
@@ -705,7 +705,7 @@ void GraphicsWindow::SplitLinesOrCurves() {
 
     // Then, actually split the entities.
     if(foundInters) {
-        SS.UndoRemember();
+        CORE.UndoRemember();
 
         // Remove any constraints we're going to replace.
         SK.constraint.RemoveTagged();

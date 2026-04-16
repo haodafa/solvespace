@@ -340,8 +340,8 @@ void SMesh::MakeFromTransformationOf(SMesh *a, Vector trans,
 bool SMesh::IsEmpty() const { return (l.IsEmpty()); }
 
 uint32_t SMesh::FirstIntersectionWith(Point2d mp) const {
-    Vector rayPoint = SS.GW.UnProjectPoint3({mp.x, mp.y, 0.0});
-    Vector rayDir = SS.GW.UnProjectPoint3({mp.x, mp.y, 1.0}).Minus(rayPoint);
+    Vector rayPoint = CORE.GW.UnProjectPoint3({mp.x, mp.y, 0.0});
+    Vector rayDir = CORE.GW.UnProjectPoint3({mp.x, mp.y, 1.0}).Minus(rayPoint);
 
     uint32_t face = 0;
     double faceT = VERY_NEGATIVE;

@@ -211,7 +211,7 @@ void SBezier::MakePwlInto(SContour *sc, double chordTol, double max_dt) const {
 void SBezier::MakePwlInto(List<Vector> *l, double chordTol, double max_dt) const {
     if(EXACT(chordTol == 0)) {
         // Use the default chord tolerance.
-        chordTol = SS.ChordTolMm();
+        chordTol = CORE.ChordTolMm();
     }
     // Never do fewer than three intermediate points for curves; people seem to get
     // unhappy when their circles turn into squares, but maybe less
@@ -236,7 +236,7 @@ void SBezier::MakePwlWorker(List<Vector> *l, double ta, double tb, double chordT
     Vector pm = PointAt((ta + tb) / 2.0);
     double d = pm.DistanceToLine(pa, pb.Minus(pa));
 
-    double step = 1.0/SS.GetMaxSegments();
+    double step = 1.0/CORE.GetMaxSegments();
     if(((tb - ta) < step || d < chordTol) && ((tb-ta) <= max_dt) ) {
         // A previous call has already added the beginning of our interval.
         l->Add(&pb);
@@ -266,7 +266,7 @@ void SBezier::MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double
                    pm3.DistanceToLine(pa, dir)
                 });
 
-    double step = 1.0/SS.GetMaxSegments();
+    double step = 1.0/CORE.GetMaxSegments();
     if( ((tb - ta) < step || d < chordTol) && ((tb-ta) <= max_dt) ) {
         // A previous call has already added the beginning of our interval.
         l->Add(&pb);

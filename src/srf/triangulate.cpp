@@ -485,7 +485,7 @@ void SContour::UvTriangulateInto(SMesh *m, SSurface *srf) {
                     bestEar = ear;
                     bestChordTol = tol;
                 }
-                if(bestChordTol < 0.1*SS.ChordTolMm()) {
+                if(bestChordTol < 0.1*CORE.ChordTolMm()) {
                     break;
                 }
             }
@@ -568,8 +568,8 @@ void SSurface::MakeTriangulationGridInto(List<double> *l, double vs, double vf,
         worst = max(worst, pm2.DistanceToLine(ps, pf.Minus(ps)));
     }
 
-    double step = 1.0/SS.GetMaxSegments();
-    if( ((vf - vs) < step || worst < SS.ChordTolMm())
+    double step = 1.0/CORE.GetMaxSegments();
+    if( ((vf - vs) < step || worst < CORE.ChordTolMm())
         && ((worst_twist > 0.999) || (depth > 3)) ) {
         l->Add(&vf);
     } else {

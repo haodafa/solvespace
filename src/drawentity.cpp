@@ -42,13 +42,13 @@ SBezierList *Entity::GetOrGenerateBezierCurves() {
 
 SEdgeList *Entity::GetOrGenerateEdges() {
     if(!edges.l.IsEmpty()) {
-        if(EXACT(edgesChordTol == SS.ChordTolMm()))
+        if(EXACT(edgesChordTol == CORE.ChordTolMm()))
             return &edges;
         edges.l.Clear();
     }
     if(edges.l.IsEmpty())
         GenerateEdges(&edges);
-    edgesChordTol = SS.ChordTolMm();
+    edgesChordTol = CORE.ChordTolMm();
     return &edges;
 }
 
@@ -63,16 +63,16 @@ BBox Entity::GetOrGenerateScreenBBox(bool *hasBBox) {
         return screenBBox;
 
     if(IsPoint()) {
-        Vector proj = SS.GW.ProjectPoint3(PointGetNum());
+        Vector proj = CORE.GW.ProjectPoint3(PointGetNum());
         screenBBox = BBox::From(proj, proj);
     } else if(IsNormal()) {
-        Vector proj = SS.GW.ProjectPoint3(SK.GetEntity(point[0])->PointGetNum());
+        Vector proj = CORE.GW.ProjectPoint3(SK.GetEntity(point[0])->PointGetNum());
         screenBBox = BBox::From(proj, proj);
     } else if(!sbl->l.IsEmpty()) {
-        Vector first = SS.GW.ProjectPoint3(sbl->l[0].ctrl[0]);
+        Vector first = CORE.GW.ProjectPoint3(sbl->l[0].ctrl[0]);
         screenBBox = BBox::From(first, first);
         for(auto &sb : sbl->l) {
-            for(int i = 0; i <= sb.deg; ++i) { screenBBox.Include(SS.GW.ProjectPoint3(sb.ctrl[i])); }
+            for(int i = 0; i <= sb.deg; ++i) { screenBBox.Include(CORE.GW.ProjectPoint3(sb.ctrl[i])); }
         }
     } else
         ssassert(false, "Expected entity to be a point or have beziers");
@@ -158,13 +158,13 @@ bool Entity::IsVisible() const {
     }
     if(!(g->IsVisible())) return false;
 
-    if(IsPoint() && !SS.GW.showPoints) return false;
-    if(IsNormal() && !SS.GW.showNormals) return false;
-    if(construction && !SS.GW.showConstruction) return false;
+    if(IsPoint() && !CORE.GW.showPoints) return false;
+    if(IsNormal() && !CORE.GW.showNormals) return false;
+    if(construction && !CORE.GW.showConstruction) return false;
 
-    if(!SS.GW.showWorkplanes) {
+    if(!CORE.GW.showWorkplanes) {
         if(IsWorkplane() && !h.isFromRequest()) {
-            if(g->h != SS.GW.activeGroup) {
+            if(g->h != CORE.GW.activeGroup) {
                 // The group-associated workplanes are hidden outside
                 // their group.
                 return false;
@@ -478,7 +478,7 @@ void Entity::GenerateBezierCurves(SBezierList *sbl) const {
             Vector u = (v.Cross(n)).WithMagnitude(v.Magnitude());
 
             // `extraPoints` is storing kerning boolean
-            SS.fonts.PlotString(font, str, sbl, extraPoints, botLeft, u, v);
+            CORE.fonts.PlotString(font, str, sbl, extraPoints, botLeft, u, v);
             break;
         }
 
@@ -500,7 +500,7 @@ bool Entity::ShouldDrawExploded() const {
 Vector Entity::ExplodeOffset() const {
     if(ShouldDrawExploded() && workplane.v != 0) {
         int requestIdx = SK.GetRequest(h.request())->groupRequestIndex;
-        double offset = SS.explodeDistance * (requestIdx + 1);
+        double offset = CORE.explodeDistance * (requestIdx + 1);
         return SK.GetEntity(workplane)->Normal()->NormalN().ScaledBy(offset);
     } else {
         return {};
@@ -522,7 +522,7 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
         zIndex = 6;
     } else if(how == DrawAs::HIDDEN) {
         zIndex = 2;
-    } else if(group != SS.GW.activeGroup) {
+    } else if(group != CORE.GW.activeGroup) {
         zIndex = 3;
     } else {
         zIndex = 5;
@@ -632,7 +632,7 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
                 if(asReference) {
                     if(!h.request().IsFromReferences()) continue;
                 } else {
-                    if(!SK.GetGroup(group)->IsVisible() || !SS.GW.showNormals) continue;
+                    if(!SK.GetGroup(group)->IsVisible() || !CORE.GW.showNormals) continue;
                 }
 
                 stroke.layer = (asReference) ? Canvas::Layer::FRONT : Canvas::Layer::NORMAL;
@@ -662,7 +662,7 @@ void Entity::Draw(DrawAs how, Canvas *canvas) {
                     double h = 60 - camera.height / 2.0;
                     double w = 60 - camera.width  / 2.0;
                     // Shift the axis to the right if they would overlap with the toolbar.
-                    if(SS.showToolbar) {
+                    if(CORE.showToolbar) {
                         if(h + 30 > -(32*18 + 3*16 + 8) / 2)
                             w += 60;
                     }

@@ -519,13 +519,13 @@ bool LinkIDF(const Platform::Path &filename, EntityList *el, SMesh *m, SShell *s
                              &allCoplanar, &errorPointAt, NULL);
 
     //hack for when there is no sketch yet and the first group is a linked IDF
-    double ctc = SS.chordTolCalculated;
-    if(ctc == 0.0) SS.chordTolCalculated = 0.1; //mm
+    double ctc = CORE.chordTolCalculated;
+    if(ctc == 0.0) CORE.chordTolCalculated = 0.1; //mm
     // there should only by one sbls in the sblss unless a board has disjointed parts...
     sh->MakeFromExtrusionOf(sblss.l.First(), {0, 0, 0},
                                    {0.0, 0.0, board_thickness},
                                    RgbaColor::From(0, 180, 0) );
-    SS.chordTolCalculated = ctc;
+    CORE.chordTolCalculated = ctc;
     sblss.Clear();
     sbl.Clear();
     sh->booleanFailed = false;

@@ -206,7 +206,7 @@ void SSurface::AllPointsIntersectingUntrimmed(Vector a, Vector b,
 
     // If we might intersect, and the surface is small, then switch to Newton
     // iterations.
-    if(DepartureFromCoplanar() < 0.2*SS.ChordTolMm()) {
+    if(DepartureFromCoplanar() < 0.2*CORE.ChordTolMm()) {
         Vector p = (ctrl[0   ][0   ]).Plus(
                     ctrl[0   ][degn]).Plus(
                     ctrl[degm][0   ]).Plus(

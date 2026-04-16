@@ -137,7 +137,7 @@ public:
         if(reversed) std::swap(p0, p1);
         blockTransformArc(&center, &p0, &p1);
 
-        hRequest hr = SS.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false);
         SK.GetEntity(hr.entity(1))->PointForceTo(center);
         SK.GetEntity(hr.entity(2))->PointForceTo(p0);
         SK.GetEntity(hr.entity(3))->PointForceTo(p1);
@@ -492,7 +492,7 @@ public:
         hEntity he = findPoint(p);
         if(he != Entity::NO_ENTITY) return he;
 
-        hRequest hr = SS.GW.AddRequest(Request::Type::DATUM_POINT, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::DATUM_POINT, /*rememberForUndo=*/false);
         he = hr.entity(0);
         SK.GetEntity(he)->PointForceTo(p);
         points.emplace(p, he);
@@ -501,13 +501,13 @@ public:
 
     hEntity createLine(Vector p0, Vector p1, hStyle style, bool constrainHV = false) {
         if(p0.Equals(p1)) return Entity::NO_ENTITY;
-        hRequest hr = SS.GW.AddRequest(Request::Type::LINE_SEGMENT, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::LINE_SEGMENT, /*rememberForUndo=*/false);
         SK.GetEntity(hr.entity(1))->PointForceTo(p0);
         SK.GetEntity(hr.entity(2))->PointForceTo(p1);
         processPoint(hr.entity(1));
         processPoint(hr.entity(2));
 
-        if(constrainHV && SS.GW.LockedInWorkplane()) {
+        if(constrainHV && CORE.GW.LockedInWorkplane()) {
             bool hasConstraint = false;
             Constraint::Type cType;
             if(fabs(p0.x - p1.x) < LENGTH_EPS) {
@@ -532,7 +532,7 @@ public:
     }
 
     hEntity createWorkplane(const Vector &p, const Quaternion &q) {
-        hRequest hr = SS.GW.AddRequest(Request::Type::WORKPLANE, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::WORKPLANE, /*rememberForUndo=*/false);
         SK.GetEntity(hr.entity(1))->PointForceTo(p);
         processPoint(hr.entity(1));
         SK.GetEntity(hr.entity(32))->NormalForceTo(q);
@@ -542,7 +542,7 @@ public:
     hEntity findOrCreateWorkplane(const Vector &p, const Quaternion &q) {
         Vector z = q.RotationN();
         for(auto &r : SK.request) {
-            if((r.type == Request::Type::WORKPLANE) && (r.group == SS.GW.activeGroup)) {
+            if((r.type == Request::Type::WORKPLANE) && (r.group == CORE.GW.activeGroup)) {
                 Vector wp = SK.GetEntity(r.h.entity(1))->PointGetNum();
                 Vector wz = SK.GetEntity(r.h.entity(32))->NormalN();
 
@@ -556,12 +556,12 @@ public:
     }
 
     static void activateWorkplane(hEntity he) {
-        Group *g = SK.GetGroup(SS.GW.activeGroup);
+        Group *g = SK.GetGroup(CORE.GW.activeGroup);
         g->activeWorkplane = he;
     }
 
     hEntity createCircle(const Vector &c, const Quaternion &q, double r, hStyle style) {
-        hRequest hr = SS.GW.AddRequest(Request::Type::CIRCLE, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::CIRCLE, /*rememberForUndo=*/false);
         SK.GetEntity(hr.entity(1))->PointForceTo(c);
         processPoint(hr.entity(1));
         SK.GetEntity(hr.entity(32))->NormalForceTo(q);
@@ -587,7 +587,7 @@ public:
         if(data.space != DRW::ModelSpace) return;
         if(addPendingBlockEntity<DRW_Point>(data)) return;
 
-        hRequest hr = SS.GW.AddRequest(Request::Type::DATUM_POINT, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::DATUM_POINT, /*rememberForUndo=*/false);
         SK.GetEntity(hr.entity(0))->PointForceTo(toVector(data.basePoint));
         processPoint(hr.entity(0));
     }
@@ -614,12 +614,12 @@ public:
         bool planar = q.RotationN().Equals({0, 0, 1});
         bool onPlane = c.z < LENGTH_EPS;
 
-        hEntity oldWorkplane = SS.GW.ActiveWorkplane();
+        hEntity oldWorkplane = CORE.GW.ActiveWorkplane();
         if (!planar || !onPlane) {
             activateWorkplane(findOrCreateWorkplane(c, q));
         }
 
-        hRequest hr = SS.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::ARC_OF_CIRCLE, /*rememberForUndo=*/false);
         Vector u = q.RotationU(), v = q.RotationV();
         Vector rvs = c.Plus(u.ScaledBy(r * cos(sa))).Plus(v.ScaledBy(r * sin(sa)));
         Vector rve = c.Plus(u.ScaledBy(r * cos(ea))).Plus(v.ScaledBy(r * sin(ea)));
@@ -730,7 +730,7 @@ public:
         if(data->degree != 3) return;
         if(addPendingBlockEntity<DRW_Spline>(*data)) return;
 
-        hRequest hr = SS.GW.AddRequest(Request::Type::CUBIC, /*rememberForUndo=*/false);
+        hRequest hr = CORE.GW.AddRequest(Request::Type::CUBIC, /*rememberForUndo=*/false);
         for(int i = 0; i < 4; i++) {
             SK.GetEntity(hr.entity(i + 1))->PointForceTo(toVector(*data->controllist[i]));
             processPoint(hr.entity(i + 1));
@@ -783,8 +783,8 @@ public:
         if(addPendingBlockEntity<DRW_Text>(data)) return;
 
         Constraint c = {};
-        c.group         = SS.GW.activeGroup;
-        c.workplane     = SS.GW.ActiveWorkplane();
+        c.group         = CORE.GW.activeGroup;
+        c.workplane     = CORE.GW.ActiveWorkplane();
         c.type          = Constraint::Type::COMMENT;
         if(data.alignH == DRW_Text::HLeft && data.alignV == DRW_Text::VBaseLine) {
             c.disp.offset   = toVector(data.basePoint);
@@ -1153,21 +1153,21 @@ ImportDwgDxf(const Platform::Path &filename,
     }
 
     bool asConstruction = true;
-    if(SS.GW.LockedInWorkplane()) {
+    if(CORE.GW.LockedInWorkplane()) {
         DxfCheck3D checker = {};
         read(data, &checker);
         if(checker.is3d) {
             Message("This %s file contains entities with non-zero Z coordinate; "
                     "the entire file will be imported as construction entities in 3d.",
                     fileType.c_str());
-            SS.GW.SetWorkplaneFreeIn3d();
-            SS.GW.EnsureValidActives();
+            CORE.GW.SetWorkplaneFreeIn3d();
+            CORE.GW.EnsureValidActives();
         } else {
             asConstruction = false;
         }
     }
 
-    SS.UndoRemember();
+    CORE.UndoRemember();
 
     DxfImport importer = {};
     importer.asConstruction = asConstruction;

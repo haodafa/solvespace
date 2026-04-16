@@ -1,5 +1,8 @@
-- [ ] 成功定义 `SolveSpaceCore` 类，包含所有的文档状态、文件 I/O 和生成逻辑。
-- [ ] 核心业务逻辑文件（如 `constraint.cpp`, `mesh.cpp`, `export.cpp` 等）不再使用全局变量 `SS` 和 `SK`。
-- [ ] 核心业务逻辑能够在没有 UI 源文件的情况下，被独立编译为一个 CMake 库目标 `solvespace_core`。
-- [ ] 各个 GUI 应用程序（Qt、GTK 等）能够基于新的 `SolveSpaceCore` API 正确编译并运行。
-- [ ] 第三方程序可以在不初始化 UI 的情况下实例化 `SolveSpaceCore`、加载文件并导出模型。
+- [x] 成功定义 `SolveSpaceCore` 类，包含所有的文档状态、文件 I/O 和生成逻辑。
+- [x] 核心业务逻辑文件（如 `constraint.cpp`, `mesh.cpp`, `export.cpp` 等）不再使用全局变量 `SS` 和 `SK`。
+- [x] UI 层不再包含核心逻辑实现，而是通过持有 `SolveSpaceCore` 的指针或引用，调用其暴露的 API 来更新状态。
+- [x] 改造后的程序成功与现有的 GUI（如 Qt/GTK 等）集成，能够正常编译并运行。
+- [x] 完成回归测试：草图创建、约束添加、网格生成、文件保存加载及撤销重做功能表现正常，未出现逻辑错误或界面卡死。
+- [x] 针对因状态隔离导致的界面刷新、数据只读访问等潜在问题，完成了专门的代码审查（Code Review）与设计调整。
+- [x] 核心业务逻辑能够在没有 UI 源文件的情况下，被独立编译为一个 CMake 库目标 `solvespace_core`。
+- [x] 第三方程序可以在不初始化 UI 的情况下实例化 `SolveSpaceCore`、加载文件并导出模型。

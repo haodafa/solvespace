@@ -46,7 +46,7 @@ void Group::AddParam(ParamList *param, hParam hp, double v) {
 
 bool Group::IsVisible() {
     if(!visible) return false;
-    Group *active = SK.GetGroup(SS.GW.activeGroup);
+    Group *active = SK.GetGroup(CORE.GW.activeGroup);
     if(order > active->order) return false;
     return true;
 }
@@ -79,8 +79,8 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
     g.scale = 1;
     g.linkFile = linkFile;
 
-    SS.GW.GroupSelection();
-    auto const &gs = SS.GW.gs;
+    CORE.GW.GroupSelection();
+    auto const &gs = CORE.GW.gs;
 
     switch(id) {
         case Command::GROUP_3D:
@@ -94,7 +94,7 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
             if(gs.points == 1 && gs.n == 1) {
                 g.subtype = Subtype::WORKPLANE_BY_POINT_ORTHO;
 
-                Vector u = SS.GW.projRight, v = SS.GW.projUp;
+                Vector u = CORE.GW.projRight, v = CORE.GW.projUp;
                 u = u.ClosestOrtho();
                 v = v.Minus(u.ScaledBy(v.Dot(u)));
                 v = v.ClosestOrtho();
@@ -113,12 +113,12 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
                 ut = ut.WithMagnitude(1);
                 vt = vt.WithMagnitude(1);
 
-                if(fabs(SS.GW.projUp.Dot(vt)) < fabs(SS.GW.projUp.Dot(ut))) {
+                if(fabs(CORE.GW.projUp.Dot(vt)) < fabs(CORE.GW.projUp.Dot(ut))) {
                     swap(ut, vt);
                     g.predef.swapUV = true;
                 }
-                if(SS.GW.projRight.Dot(ut) < 0) g.predef.negateU = true;
-                if(SS.GW.projUp.   Dot(vt) < 0) g.predef.negateV = true;
+                if(CORE.GW.projRight.Dot(ut) < 0) g.predef.negateU = true;
+                if(CORE.GW.projUp.   Dot(vt) < 0) g.predef.negateV = true;
             } else if(gs.workplanes == 1 && gs.n == 1) {
                 if(gs.entity[0].isFromRequest()) {
                     Entity *wrkpl = SK.GetEntity(gs.entity[0]);
@@ -168,21 +168,21 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
             break;
 
         case Command::GROUP_EXTRUDE:
-            if(!SS.GW.LockedInWorkplane()) {
+            if(!CORE.GW.LockedInWorkplane()) {
                 Error(_("Activate a workplane (Sketch -> In Workplane) before "
                         "extruding. The sketch will be extruded normal to the "
                         "workplane."));
                 return;
             }
             g.type = Type::EXTRUDE;
-            g.opA = SS.GW.activeGroup;
-            g.predef.entityB = SS.GW.ActiveWorkplane();
+            g.opA = CORE.GW.activeGroup;
+            g.predef.entityB = CORE.GW.ActiveWorkplane();
             g.subtype = Subtype::ONE_SIDED;
             g.name = C_("group-name", "extrude");
             break;
 
         case Command::GROUP_LATHE:
-            if(!SS.GW.LockedInWorkplane()) {
+            if(!CORE.GW.LockedInWorkplane()) {
                 Error(_("Lathe operation can only be applied to planar sketches."));
                 return;
             }
@@ -203,12 +203,12 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
                 return;
             }
             g.type = Type::LATHE;
-            g.opA = SS.GW.activeGroup;
+            g.opA = CORE.GW.activeGroup;
             g.name = C_("group-name", "lathe");
             break;
 
         case Command::GROUP_REVOLVE:
-            if(!SS.GW.LockedInWorkplane()) {
+            if(!CORE.GW.LockedInWorkplane()) {
                 Error(_("Revolve operation can only be applied to planar sketches."));
                 return;
             }
@@ -229,14 +229,14 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
                 return;
             }
             g.type    = Type::REVOLVE;
-            g.opA     = SS.GW.activeGroup;
+            g.opA     = CORE.GW.activeGroup;
             g.valA    = 2;
             g.subtype = Subtype::ONE_SIDED;
             g.name    = C_("group-name", "revolve");
             break;
 
         case Command::GROUP_HELIX:
-            if(!SS.GW.LockedInWorkplane()) {
+            if(!CORE.GW.LockedInWorkplane()) {
                 Error(_("Helix operation can only be applied to planar sketches."));
                 return;
             }
@@ -257,16 +257,16 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
                 return;
             }
             g.type    = Type::HELIX;
-            g.opA     = SS.GW.activeGroup;
+            g.opA     = CORE.GW.activeGroup;
             g.valA    = 2;
             g.subtype = Subtype::ONE_SIDED;
             g.name    = C_("group-name", "helix");
             break;
 
         case Command::GROUP_ROT: {
-            if(gs.points == 1 && gs.n == 1 && SS.GW.LockedInWorkplane()) {
+            if(gs.points == 1 && gs.n == 1 && CORE.GW.LockedInWorkplane()) {
                 g.predef.origin = gs.point[0];
-                Entity *w = SK.GetEntity(SS.GW.ActiveWorkplane());
+                Entity *w = SK.GetEntity(CORE.GW.ActiveWorkplane());
                 g.predef.entityB = w->Normal()->h;
                 g.activeWorkplane = w->h;
             } else if(gs.points == 1 && gs.vectors == 1 && gs.n == 2) {
@@ -283,7 +283,7 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
                 return;
             }
             g.type = Type::ROTATE;
-            g.opA = SS.GW.activeGroup;
+            g.opA = CORE.GW.activeGroup;
             g.valA = 3;
             g.subtype = Subtype::ONE_SIDED;
             g.name = C_("group-name", "rotate");
@@ -292,11 +292,11 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
 
         case Command::GROUP_TRANS:
             g.type = Type::TRANSLATE;
-            g.opA = SS.GW.activeGroup;
+            g.opA = CORE.GW.activeGroup;
             g.valA = 3;
             g.subtype = Subtype::ONE_SIDED;
-            g.predef.entityB = SS.GW.ActiveWorkplane();
-            g.activeWorkplane = SS.GW.ActiveWorkplane();
+            g.predef.entityB = CORE.GW.ActiveWorkplane();
+            g.activeWorkplane = CORE.GW.ActiveWorkplane();
             g.name = C_("group-name", "translate");
             break;
 
@@ -304,7 +304,7 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
             g.type = Type::LINKED;
             g.meshCombine = CombineAs::ASSEMBLE;
             if(g.linkFile.IsEmpty()) {
-                Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(SS.GW.window);
+                Platform::FileDialogRef dialog = Platform::CreateOpenFileDialog(CORE.GW.window);
                 dialog->AddFilters(Platform::SolveSpaceLinkFileFilters);
                 dialog->ThawChoices(settings, "LinkSketch");
                 if(!dialog->RunModal()) return;
@@ -329,21 +329,21 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
 
     // Copy color from the previous mesh-contributing group.
     if(g.IsMeshGroup() && !SK.groupOrder.IsEmpty()) {
-        Group *running = SK.GetRunningMeshGroupFor(SS.GW.activeGroup);
+        Group *running = SK.GetRunningMeshGroupFor(CORE.GW.activeGroup);
         if(running != NULL) {
             g.color = running->color;
         }
     }
 
-    SS.GW.ClearSelection();
-    SS.UndoRemember();
+    CORE.GW.ClearSelection();
+    CORE.UndoRemember();
 
     bool afterActive = false;
     for(hGroup hg : SK.groupOrder) {
         Group *gi = SK.GetGroup(hg);
         if(afterActive)
             gi->order += 1;
-        if(gi->h == SS.GW.activeGroup) {
+        if(gi->h == CORE.GW.activeGroup) {
             g.order = gi->order + 1;
             afterActive = true;
         }
@@ -353,10 +353,10 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
     Group *gg = SK.GetGroup(g.h);
 
     if(gg->type == Type::LINKED) {
-        SS.ReloadAllLinked(SS.saveFile);
+        CORE.ReloadAllLinked(CORE.saveFile);
     }
     gg->clean = false;
-    SS.GW.activeGroup = gg->h;
+    CORE.GW.activeGroup = gg->h;
     SS.GenerateAll();
     if(gg->type == Type::DRAWING_WORKPLANE) {
         // Can't set the active workplane for this one until after we've
@@ -365,7 +365,7 @@ void Group::MenuGroup(Command id, Platform::Path linkFile) {
     }
     gg->Activate();
     TextWindow::ScreenSelectGroup(0, gg->h.v);
-    SS.GW.AnimateOntoWorkplane();
+    CORE.GW.AnimateOntoWorkplane();
 }
 
 void Group::TransformImportedBy(Vector t, Quaternion q) {
@@ -429,9 +429,9 @@ std::string Group::DescriptionString() {
 
 void Group::Activate() {
     if(type == Type::DRAWING_WORKPLANE || type == Type::DRAWING_3D) {
-        SS.GW.showFaces = SS.GW.showFacesDrawing;
+        CORE.GW.showFaces = CORE.GW.showFacesDrawing;
     } else {
-        SS.GW.showFaces = SS.GW.showFacesNonDrawing;
+        CORE.GW.showFaces = CORE.GW.showFacesNonDrawing;
     }
     SS.MarkGroupDirty(h); // for good measure; shouldn't be needed
     SS.ScheduleShowTW();
@@ -439,11 +439,11 @@ void Group::Activate() {
 
 void Group::Generate(EntityList *entity, ParamList *param)
 {
-    Vector gn = (SS.GW.projRight).Cross(SS.GW.projUp);
-    Vector gp = SS.GW.projRight.Plus(SS.GW.projUp);
-    Vector gc = (SS.GW.offset).ScaledBy(-1);
-    gn = gn.WithMagnitude(200/SS.GW.scale);
-    gp = gp.WithMagnitude(200/SS.GW.scale);
+    Vector gn = (CORE.GW.projRight).Cross(CORE.GW.projUp);
+    Vector gp = CORE.GW.projRight.Plus(CORE.GW.projUp);
+    Vector gc = (CORE.GW.offset).ScaledBy(-1);
+    gn = gn.WithMagnitude(200/CORE.GW.scale);
+    gp = gp.WithMagnitude(200/CORE.GW.scale);
     int a, i;
     switch(type) {
         case Type::DRAWING_3D:
@@ -1221,7 +1221,7 @@ void Group::CopyEntity(EntityList *el,
 }
 
 bool Group::ShouldDrawExploded() const {
-    return SS.explode && h == SS.GW.activeGroup && type == Type::DRAWING_WORKPLANE && !SS.exportMode;
+    return CORE.explode && h == CORE.GW.activeGroup && type == Type::DRAWING_WORKPLANE && !CORE.exportMode;
 }
 
 } // namespace SolveSpace

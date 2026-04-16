@@ -848,7 +848,7 @@ void SCurve::RemoveShortSegments(SSurface *srfA, SSurface *srfB) {
             srf->ClosestPointTo(prev,   &(puv.x), &(puv.y));
             srf->ClosestPointTo(scn->p, &(nuv.x), &(nuv.y));
 
-            if(srf->ChordToleranceForEdge(nuv, puv) > SS.ChordTolMm() ) {
+            if(srf->ChordToleranceForEdge(nuv, puv) > CORE.ChordTolMm() ) {
                 mustKeep = true;
             }
         }
