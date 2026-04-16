@@ -6,6 +6,8 @@
 //-----------------------------------------------------------------------------
 #ifndef SOLVESPACE_EXPR_H
 #define SOLVESPACE_EXPR_H
+#include "solvespace_core_api.h"
+
 
 #include <cstdint>
 #include <limits>
@@ -19,7 +21,7 @@ namespace SolveSpace {
 
 using SubstitutionMap = std::unordered_map<hParam, Param *, HandleHasher<hParam>>;
 
-class Expr {
+class SOLVESPACE_CORE_API Expr {
 public:
 
     enum class Op : uint32_t {
@@ -111,7 +113,7 @@ public:
     static Expr *From(const std::string &input, bool popUpError);
 };
 
-class ExprVector {
+class SOLVESPACE_CORE_API ExprVector {
 public:
     Expr *x, *y, *z;
 
@@ -131,7 +133,7 @@ public:
     Vector Eval() const;
 };
 
-class ExprQuaternion {
+class SOLVESPACE_CORE_API ExprQuaternion {
 public:
     Expr *w, *vx, *vy, *vz;
 

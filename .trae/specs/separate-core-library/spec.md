@@ -8,6 +8,7 @@
 - **BREAKING**: 将所有 UI 相关的源文件和头文件移动到新的目录 `src/ui/` 下。
 - 在 `src/core/` 中建立独立的 `CMakeLists.txt`，用于编译核心库，并添加宏以支持生成动态链接库（Shared Library）。
 - 在 `src/core/` 的头文件（如 `solvespace_core.h`）中添加跨平台的导出宏 `SOLVESPACE_CORE_API`（处理 `__declspec(dllexport)` 和 `__declspec(dllimport)`），以支持 Visual Studio 编译动态库。
+- 在 `src/core/` 和 `src/ui/` 中分别设置和引入**预编译头（Precompiled Headers）**，如 `stdafx.h` 或使用 CMake 3.16+ 的 `target_precompile_headers` 以加速 Visual Studio 下的编译速度。
 - 在 `src/ui/` 中建立独立的 `CMakeLists.txt`，用于编译界面可执行程序，并链接到 `core` 库。
 - 修改项目根目录及 `src/` 目录的 `CMakeLists.txt` 以支持新的目录结构。
 

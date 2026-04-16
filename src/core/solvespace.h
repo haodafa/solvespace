@@ -6,6 +6,8 @@
 
 #ifndef SOLVESPACE_H
 #define SOLVESPACE_H
+#include "solvespace_core_api.h"
+
 
 #include <algorithm>
 #include <cstdint>
@@ -53,7 +55,7 @@ enum class SolveResult : uint32_t {
 };
 
 // Utility functions that are provided in the platform-independent code.
-class utf8_iterator {
+class SOLVESPACE_CORE_API utf8_iterator {
     const char *p, *n;
 public:
     using iterator_category = std::forward_iterator_tag;
@@ -71,7 +73,7 @@ public:
     char32_t       operator*();
     const char*    ptr() const { return p; }
 };
-class ReadUTF8 {
+class SOLVESPACE_CORE_API ReadUTF8 {
     const std::string &str;
 public:
     ReadUTF8(const std::string &str) : str(str) {}
@@ -79,7 +81,7 @@ public:
     utf8_iterator end()   const { return utf8_iterator(&str[0] + str.length()); }
 };
 
-class System {
+class SOLVESPACE_CORE_API System {
 public:
     enum { MAX_UNKNOWNS = 2048 };
 
@@ -157,7 +159,7 @@ public:
     void Clear();
 };
 
-class StepFileWriter {
+class SOLVESPACE_CORE_API StepFileWriter {
 public:
     bool HasCartesianPointAnAlias(int number, Vector v, int vertex,
                                   bool *vertex_has_alias = nullptr);
@@ -229,7 +231,7 @@ public:
     RgbaColor currentColor;
 };
 
-class VectorFileWriter {
+class SOLVESPACE_CORE_API VectorFileWriter {
 protected:
     Vector u, v, n, origin;
     double cameraTan, scale;
@@ -265,7 +267,7 @@ public:
     virtual bool HasCanvasSize() const = 0;
     virtual bool CanOutputMesh() const = 0;
 };
-class DxfFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API DxfFileWriter : public VectorFileWriter {
 public:
     struct BezierPath {
         std::vector<SBezier *> beziers;
@@ -291,7 +293,7 @@ public:
     bool CanOutputMesh() const override { return false; }
     bool NeedToOutput(Constraint *c);
 };
-class EpsFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API EpsFileWriter : public VectorFileWriter {
 public:
     Vector prevPt;
     void MaybeMoveTo(Vector s, Vector f);
@@ -308,7 +310,7 @@ public:
     bool HasCanvasSize() const override { return true; }
     bool CanOutputMesh() const override { return true; }
 };
-class PdfFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API PdfFileWriter : public VectorFileWriter {
 public:
     uint32_t xref[10];
     uint32_t bodyStart;
@@ -327,7 +329,7 @@ public:
     bool HasCanvasSize() const override { return true; }
     bool CanOutputMesh() const override { return true; }
 };
-class SvgFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API SvgFileWriter : public VectorFileWriter {
 public:
     Vector prevPt;
     void MaybeMoveTo(Vector s, Vector f);
@@ -344,7 +346,7 @@ public:
     bool HasCanvasSize() const override { return true; }
     bool CanOutputMesh() const override { return true; }
 };
-class HpglFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API HpglFileWriter : public VectorFileWriter {
 public:
     static double MmToHpglUnits(double mm);
     void StartPath( RgbaColor strokeRgb, double lineWidth,
@@ -359,7 +361,7 @@ public:
     bool HasCanvasSize() const override { return false; }
     bool CanOutputMesh() const override { return false; }
 };
-class Step2dFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API Step2dFileWriter : public VectorFileWriter {
     StepFileWriter sfw;
     void StartPath( RgbaColor strokeRgb, double lineWidth,
                     bool filled, RgbaColor fillRgb, hStyle hs) override;
@@ -373,7 +375,7 @@ class Step2dFileWriter : public VectorFileWriter {
     bool HasCanvasSize() const override { return false; }
     bool CanOutputMesh() const override { return false; }
 };
-class GCodeFileWriter : public VectorFileWriter {
+class SOLVESPACE_CORE_API GCodeFileWriter : public VectorFileWriter {
 public:
     SEdgeList sel;
     void StartPath( RgbaColor strokeRgb, double lineWidth,
@@ -396,7 +398,7 @@ public:
 #   define ENTITY Entity
 #   define CONSTRAINT Constraint
 #endif
-class Sketch {
+class SOLVESPACE_CORE_API Sketch {
 public:
     // These are user-editable, and define the sketch.
     IdList<Group,hGroup>            group;
@@ -427,7 +429,7 @@ public:
 
 #include "solvespace_core.h"
 
-class SolveSpaceUI : public SolveSpaceCore {
+class SOLVESPACE_CORE_API SolveSpaceUI : public SolveSpaceCore {
 public:
     static void MenuFile(Command id);
     FILE *fh;

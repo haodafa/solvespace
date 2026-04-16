@@ -6,6 +6,8 @@
 //-----------------------------------------------------------------------------
 #ifndef SOLVESPACE_DSC_H
 #define SOLVESPACE_DSC_H
+#include "solvespace_core_api.h"
+
 
 #include <algorithm>
 #include <cmath>
@@ -24,7 +26,7 @@ class Point2d;
 class hEntity;
 class hParam;
 
-class Quaternion {
+class SOLVESPACE_CORE_API Quaternion {
 public:
     // a + (vx)*i + (vy)*j + (vz)*k
     double w, vx, vy, vz;
@@ -55,7 +57,7 @@ public:
     Quaternion Mirror() const;
 };
 
-class Vector {
+class SOLVESPACE_CORE_API Vector {
 public:
     double x, y, z;
 
@@ -182,15 +184,15 @@ inline void Vector::MakeMaxMin(Vector *maxv, Vector *minv) const {
     minv->z = std::min(minv->z, z);
 }
 
-struct VectorHash {
+struct SOLVESPACE_CORE_API VectorHash {
     size_t operator()(const Vector &v) const;
 };
 
-struct VectorPred {
+struct SOLVESPACE_CORE_API VectorPred {
     bool operator()(Vector a, Vector b) const;
 };
 
-class Vector4 {
+class SOLVESPACE_CORE_API Vector4 {
 public:
     double w, x, y, z;
 
@@ -204,7 +206,7 @@ public:
     Vector PerspectiveProject() const;
 };
 
-class Point2d {
+class SOLVESPACE_CORE_API Point2d {
 public:
     double x, y;
 
@@ -230,7 +232,7 @@ public:
 
 // A simple list
 template<class T>
-class List {
+class SOLVESPACE_CORE_API List {
     T *elem            = nullptr;
     int elemsAllocated = 0;
 
@@ -356,7 +358,7 @@ template<class T, class H> class IdList;
 
 // Comparison functor used by IdList and related classes
 template <class T, class H>
-struct CompareId {
+struct SOLVESPACE_CORE_API CompareId {
 
     CompareId(const IdList<T, H> *list) {
         idlist = list;
@@ -380,7 +382,7 @@ private:
 // sorted by that identifier, and items can be looked up in log n time by
 // id.
 template <class T, class H>
-class IdList {
+class SOLVESPACE_CORE_API IdList {
     std::vector<T> elemstore;
     std::vector<int> elemidx;
     std::vector<int> freelist;
@@ -600,7 +602,7 @@ public:
 
 };
 
-class BandedMatrix {
+class SOLVESPACE_CORE_API BandedMatrix {
 public:
     enum {
         MAX_UNKNOWNS   = 16,
@@ -621,7 +623,7 @@ public:
 
 // Note: sizeof(class RgbaColor) should be exactly 4
 //
-class RgbaColor {
+class SOLVESPACE_CORE_API RgbaColor {
 public:
     uint8_t red, green, blue, alpha;
 
@@ -704,13 +706,13 @@ public:
     }
 };
 
-struct RgbaColorCompare {
+struct SOLVESPACE_CORE_API RgbaColorCompare {
     bool operator()(RgbaColor a, RgbaColor b) const {
         return a.ToARGB32() < b.ToARGB32();
     }
 };
 
-class BBox {
+class SOLVESPACE_CORE_API BBox {
 public:
     Vector minp;
     Vector maxp;

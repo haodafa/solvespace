@@ -8,6 +8,8 @@
 
 #ifndef SOLVESPACE_TTF_H
 #define SOLVESPACE_TTF_H
+#include "solvespace_core_api.h"
+
 
 #include <string>
 
@@ -25,7 +27,7 @@ namespace SolveSpace {
 
 class SBezierList;
 
-class TtfFont {
+class SOLVESPACE_CORE_API TtfFont {
 public:
     Platform::Path  fontFile; // or resource path/name as res://<path>
     std::string     name;
@@ -46,7 +48,7 @@ public:
     bool ExtractTTFData(bool keepOpen);
 };
 
-class TtfFontList {
+class SOLVESPACE_CORE_API TtfFontList {
 public:
     FT_LibraryRec_ *fontLibrary;
     bool            loaded;

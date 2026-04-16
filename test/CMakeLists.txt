@@ -73,6 +73,7 @@ add_executable(solvespace-testsuite
     $<TARGET_PROPERTY:resources,EXTRA_SOURCES>)
 
 target_link_libraries(solvespace-testsuite
+    solvespace_core
     solvespace-headless
     ${COVERAGE_LIBRARY})
 

@@ -1,5 +1,7 @@
 #ifndef SOVLESPACE_HANDLE_H
 #define SOVLESPACE_HANDLE_H
+#include "solvespace_core_api.h"
+
 
 #include <functional>
 #include <type_traits>
@@ -9,7 +11,7 @@ namespace SolveSpace {
 /// Trait indicating which types are handle types and should get the associated operators.
 /// Specialize for each handle type and inherit from std::true_type.
 template<class T>
-struct IsHandleOracle : std::false_type {};
+struct SOLVESPACE_CORE_API IsHandleOracle : std::false_type {};
 
 // Equality-compare any two instances of a handle type.
 template<class T>
@@ -33,7 +35,7 @@ operator<(T const &lhs, T const &rhs) {
 }
 
 template<class T>
-struct HandleHasher {
+struct SOLVESPACE_CORE_API HandleHasher {
     static_assert(IsHandleOracle<T>::value, "Not a valid handle type");
 
     inline size_t operator()(const T &h) const {

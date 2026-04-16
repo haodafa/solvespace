@@ -7,6 +7,8 @@
 
 #ifndef SOLVESPACE_SKETCH_H
 #define SOLVESPACE_SKETCH_H
+#include "solvespace_core_api.h"
+
 
 #include <cstdint>
 #include <string>
@@ -61,7 +63,7 @@ enum class Command : uint32_t;
 
 // All of the hWhatever handles are a 32-bit ID, that is used to represent
 // some data structure in the sketch.
-class hEquation {
+class SOLVESPACE_CORE_API hEquation {
 public:
     uint32_t v;
 
@@ -72,7 +74,7 @@ public:
 template<>
 struct IsHandleOracle<hEquation> : std::true_type {};
 
-class hGroup {
+class SOLVESPACE_CORE_API hGroup {
 public:
     // bits 15: 0   -- group index
     uint32_t v;
@@ -85,7 +87,7 @@ public:
 template<>
 struct IsHandleOracle<hGroup> : std::true_type {};
 
-class hRequest {
+class SOLVESPACE_CORE_API hRequest {
 public:
     // bits 15: 0   -- request index
     uint32_t v;
@@ -99,7 +101,7 @@ public:
 template<>
 struct IsHandleOracle<hRequest> : std::true_type {};
 
-class hEntity {
+class SOLVESPACE_CORE_API hEntity {
 public:
     // bits 15: 0   -- entity index
     //      31:16   -- request index
@@ -114,7 +116,7 @@ public:
 template<>
 struct IsHandleOracle<hEntity> : std::true_type {};
 
-class Equation {
+class SOLVESPACE_CORE_API Equation {
 public:
     int         tag;
     hEquation   h;
@@ -124,7 +126,7 @@ public:
     void Clear() {}
 };
 
-class hStyle {
+class SOLVESPACE_CORE_API hStyle {
 public:
     uint32_t v;
 };
@@ -135,26 +137,26 @@ struct IsHandleOracle<hStyle> : std::true_type {};
 class Entity;
 using EntityList = IdList<Entity,hEntity>;
 
-struct EntityId {
+struct SOLVESPACE_CORE_API EntityId {
     uint32_t v;     // entity ID, starting from 0
 };
 
 template<>
 struct IsHandleOracle<EntityId> : std::true_type {};
 
-struct EntityKey {
+struct SOLVESPACE_CORE_API EntityKey {
     hEntity     input;
     int         copyNumber;
     // (input, copyNumber) gets mapped to hGroup::entity(i)
 };
-struct EntityKeyHash {
+struct SOLVESPACE_CORE_API EntityKeyHash {
     size_t operator()(const EntityKey &k) const {
         size_t h1 = std::hash<uint32_t>{}(k.input.v),
                h2 = std::hash<uint32_t>{}(k.copyNumber);
         return h1 ^ (h2 << 1);
     }
 };
-struct EntityKeyEqual {
+struct SOLVESPACE_CORE_API EntityKeyEqual {
     bool operator()(const EntityKey &a, const EntityKey &b) const {
         return std::tie(a.input, a.copyNumber) == std::tie(b.input, b.copyNumber);
     }
@@ -162,7 +164,7 @@ struct EntityKeyEqual {
 typedef std::unordered_map<EntityKey, EntityId, EntityKeyHash, EntityKeyEqual> EntityMap;
 
 // A set of requests. Every request must have an associated group.
-class Group {
+class SOLVESPACE_CORE_API Group {
 public:
     static const hGroup     HGROUP_REFERENCES;
 
@@ -363,7 +365,7 @@ public:
 
 // A user request for some primitive or derived operation; for example a
 // line, or a step and repeat.
-class Request {
+class SOLVESPACE_CORE_API Request {
 public:
     // Some predefined requests, that are present in every sketch.
     static const hRequest   HREQUEST_REFERENCE_XY;
@@ -411,7 +413,7 @@ public:
 };
 
 #define MAX_POINTS_IN_ENTITY (12)
-class EntityBase {
+class SOLVESPACE_CORE_API EntityBase {
 public:
     int         tag;
     hEntity     h;
@@ -563,7 +565,7 @@ public:
     void Clear() {}
 };
 
-class Entity : public EntityBase {
+class SOLVESPACE_CORE_API Entity : public EntityBase {
 public:
     // Necessary for Entity e = {} to zero-initialize, since
     // classes with base classes are not aggregates and
@@ -629,7 +631,7 @@ public:
     Vector PointGetDrawNum() const;
 };
 
-class EntReqTable {
+class SOLVESPACE_CORE_API EntReqTable {
 public:
     static void GetRequestInfo(Request::Type req, int extraPoints,
                                EntityBase::Type *ent, int *pts, bool *hasNormal, bool *hasDistance);
@@ -638,7 +640,7 @@ public:
     static Request::Type GetRequestForEntity(EntityBase::Type ent);
 };
 
-class hConstraint {
+class SOLVESPACE_CORE_API hConstraint {
 public:
     uint32_t v;
 
@@ -649,7 +651,7 @@ public:
 template<>
 struct IsHandleOracle<hConstraint> : std::true_type {};
 
-class ConstraintBase {
+class SOLVESPACE_CORE_API ConstraintBase {
 public:
     int         tag;
     hConstraint h;
@@ -748,7 +750,7 @@ public:
     void Clear() {}
 };
 
-class Constraint : public ConstraintBase {
+class SOLVESPACE_CORE_API Constraint : public ConstraintBase {
 public:
     // See Entity::Entity().
     Constraint() : ConstraintBase({}), disp() {}
@@ -821,7 +823,7 @@ public:
                                            Entity *p2);
 };
 
-class Style {
+class SOLVESPACE_CORE_API Style {
 public:
     int         tag;
     hStyle      h;
@@ -979,7 +981,7 @@ inline hConstraint hEquation::constraint() const
     { hConstraint r; r.v = (v >> 16); return r; }
 
 // The format for entities stored on the clipboard.
-class ClipboardRequest {
+class SOLVESPACE_CORE_API ClipboardRequest {
 public:
     Request::Type type;
     int         extraPoints;

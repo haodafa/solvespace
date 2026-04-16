@@ -7,6 +7,8 @@
 
 #ifndef SOLVESPACE_POLYGON_H
 #define SOLVESPACE_POLYGON_H
+#include "solvespace_core_api.h"
+
 
 #include <cstdint>
 #include <functional>
@@ -46,7 +48,7 @@ enum class EdgeKind : uint32_t {
     SHARP                = 500,
 };
 
-class SEdge {
+class SOLVESPACE_CORE_API SEdge {
 public:
     int    tag;
     int    auxA, auxB;
@@ -56,7 +58,7 @@ public:
     bool EdgeCrosses(Vector a, Vector b, Vector *pi=NULL, SPointList *spl=NULL) const;
 };
 
-class SEdgeList {
+class SOLVESPACE_CORE_API SEdgeList {
 public:
     List<SEdge>     l;
 
@@ -78,7 +80,7 @@ public:
 // result in more duplicated elements. So it's conservative to be sloppy here.
 #define KDTREE_EPS (20*LENGTH_EPS)
 
-class SEdgeLl {
+class SOLVESPACE_CORE_API SEdgeLl {
 public:
     SEdge       *se;
     SEdgeLl     *next;
@@ -86,7 +88,7 @@ public:
     static SEdgeLl *Alloc();
 };
 
-class SKdNodeEdges {
+class SOLVESPACE_CORE_API SKdNodeEdges {
 public:
     int which; // whether c is x, y, or z
     double c;
@@ -102,7 +104,7 @@ public:
         Vector *pi=NULL, SPointList *spl=NULL) const;
 };
 
-class SPoint {
+class SOLVESPACE_CORE_API SPoint {
 public:
     int     tag;
 
@@ -112,7 +114,7 @@ public:
     Vector  auxv;
 };
 
-class SPointList {
+class SOLVESPACE_CORE_API SPointList {
 public:
     List<SPoint>    l;
 
@@ -123,7 +125,7 @@ public:
     void Add(Vector pt);
 };
 
-class SContour {
+class SOLVESPACE_CORE_API SContour {
 public:
     int             tag;
     int             timesEnclosed;
@@ -154,7 +156,7 @@ typedef struct {
     RgbaColor color;
 } STriMeta;
 
-class SPolygon {
+class SOLVESPACE_CORE_API SPolygon {
 public:
     List<SContour>  l;
     Vector          normal;
@@ -177,7 +179,7 @@ public:
     void InverseTransformInto(SPolygon *sp, Vector u, Vector v, Vector n) const;
 };
 
-class STriangle {
+class SOLVESPACE_CORE_API STriangle {
 public:
     int         tag;
     STriMeta    meta;
@@ -206,7 +208,7 @@ public:
     bool IsDegenerate() const;
 };
 
-class SBsp2 {
+class SOLVESPACE_CORE_API SBsp2 {
 public:
     Vector      np;     // normal to the plane
 
@@ -228,7 +230,7 @@ public:
     static SBsp2 *Alloc();
 };
 
-class SBsp3 {
+class SOLVESPACE_CORE_API SBsp3 {
 public:
     Vector      n;
     double      d;
@@ -259,7 +261,7 @@ public:
     void GenerateInPaintOrder(SMesh *m) const;
 };
 
-class SMesh {
+class SOLVESPACE_CORE_API SMesh {
 public:
     List<STriangle>     l;
 
@@ -306,7 +308,7 @@ public:
 };
 
 // A linked list of triangles
-class STriangleLl {
+class SOLVESPACE_CORE_API STriangleLl {
 public:
     STriangle       *tri;
 
@@ -315,7 +317,7 @@ public:
     static STriangleLl *Alloc();
 };
 
-class SOutline {
+class SOLVESPACE_CORE_API SOutline {
 public:
     int    tag;
     Vector a, b, nl, nr;
@@ -323,7 +325,7 @@ public:
     bool IsVisible(Vector projDir) const;
 };
 
-class SOutlineList {
+class SOLVESPACE_CORE_API SOutlineList {
 public:
     List<SOutline> l;
 
@@ -334,7 +336,7 @@ public:
     void MakeFromCopyOf(SOutlineList *ol);
 };
 
-class SKdNode {
+class SOLVESPACE_CORE_API SKdNode {
 public:
     struct EdgeOnInfo {
         int        count;
@@ -374,7 +376,7 @@ public:
     void SnapToVertex(Vector v, SMesh *extras);
 };
 
-class PolylineBuilder {
+class SOLVESPACE_CORE_API PolylineBuilder {
 public:
     struct Edge;
 

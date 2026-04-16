@@ -9,6 +9,8 @@
 
 #ifndef SOLVESPACE_SURFACE_H
 #define SOLVESPACE_SURFACE_H
+#include "solvespace_core_api.h"
+
 
 #include <cstdint>
 
@@ -25,7 +27,7 @@ class SCurvePt;
 
 // Utility data structure, a two-dimensional BSP to accelerate polygon
 // operations.
-class SBspUv {
+class SOLVESPACE_CORE_API SBspUv {
 public:
     Point2d  a, b;
 
@@ -63,7 +65,7 @@ public:
 
 class SShell;
 
-class hSSurface {
+class SOLVESPACE_CORE_API hSSurface {
 public:
     uint32_t v;
 };
@@ -71,7 +73,7 @@ public:
 template<>
 struct IsHandleOracle<hSSurface> : std::true_type {};
 
-class hSCurve {
+class SOLVESPACE_CORE_API hSCurve {
 public:
     uint32_t v;
 };
@@ -82,7 +84,7 @@ struct IsHandleOracle<hSCurve> : std::true_type {};
 // Stuff for rational polynomial curves, of degree one to three. These are
 // our inputs, and are also calculated for certain exact surface-surface
 // intersections.
-class SBezier {
+class SOLVESPACE_CORE_API SBezier {
 public:
     int             tag;
     int             auxA, auxB;
@@ -130,7 +132,7 @@ public:
     static SBezier From(Vector4 p0, Vector4 p1);
 };
 
-class SBezierList {
+class SOLVESPACE_CORE_API SBezierList {
 public:
     List<SBezier>   l;
 
@@ -142,7 +144,7 @@ public:
                                         Vector *notCoplanarAt) const;
 };
 
-class SBezierLoop {
+class SOLVESPACE_CORE_API SBezierLoop {
 public:
     int             tag;
     List<SBezier>   l;
@@ -157,7 +159,7 @@ public:
                                   bool *allClosed, SEdge *errorAt);
 };
 
-class SBezierLoopSet {
+class SOLVESPACE_CORE_API SBezierLoopSet {
 public:
     List<SBezierLoop> l;
     Vector normal;
@@ -175,7 +177,7 @@ public:
     void Clear();
 };
 
-class SBezierLoopSetSet {
+class SOLVESPACE_CORE_API SBezierLoopSetSet {
 public:
     List<SBezierLoopSet>    l;
 
@@ -189,14 +191,14 @@ public:
 };
 
 // Stuff for the surface trim curves: piecewise linear
-class SCurvePt {
+class SOLVESPACE_CORE_API SCurvePt {
 public:
     int         tag;
     Vector      p;
     bool        vertex;
 };
 
-class SCurve {
+class SOLVESPACE_CORE_API SCurve {
 public:
     hSCurve         h;
 
@@ -235,7 +237,7 @@ public:
 // by its handle, and the starting and ending points of our segment of it.
 // The vector out points out of the surface; it, the surface outer normal,
 // and a tangent to the beginning of the curve are all orthogonal.
-class STrimBy {
+class SOLVESPACE_CORE_API STrimBy {
 public:
     hSCurve     curve;
     bool        backwards;
@@ -249,7 +251,7 @@ public:
 };
 
 // An intersection point between a line and a surface
-class SInter {
+class SOLVESPACE_CORE_API SInter {
 public:
     int         tag;
     Vector      p;
@@ -260,7 +262,7 @@ public:
 };
 
 // A rational polynomial surface in Bezier form.
-class SSurface {
+class SOLVESPACE_CORE_API SSurface {
 public:
 
     enum class CombineAs : uint32_t {
@@ -382,7 +384,7 @@ public:
     void Clear();
 };
 
-class SShell {
+class SOLVESPACE_CORE_API SShell {
 public:
     IdList<SCurve,hSCurve>      curve;
     IdList<SSurface,hSSurface>  surface;

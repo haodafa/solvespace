@@ -1,5 +1,7 @@
 #ifndef SOLVESPACE_PARAM_H
 #define SOLVESPACE_PARAM_H
+#include "solvespace_core_api.h"
+
 
 #include <cstdint>
 #include <unordered_set>
@@ -10,7 +12,7 @@ namespace SolveSpace {
 
 class hRequest;
 
-class hParam {
+class SOLVESPACE_CORE_API hParam {
 public:
     // bits 15: 0   -- param index
     //      31:16   -- request index
@@ -22,7 +24,7 @@ public:
 template<>
 struct IsHandleOracle<hParam> : std::true_type {};
 
-class Param {
+class SOLVESPACE_CORE_API Param {
 public:
     int         tag;
     hParam      h;

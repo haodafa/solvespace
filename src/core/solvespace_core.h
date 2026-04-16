@@ -6,11 +6,13 @@
 
 #ifndef SOLVESPACE_CORE_H
 #define SOLVESPACE_CORE_H
+#include "solvespace_core_api.h"
+
 
 
 #include "ui.h"
 
-class SolveSpaceCore {
+class SOLVESPACE_CORE_API SolveSpaceCore {
 public:
     mutable std::mutex stateMutex;
 

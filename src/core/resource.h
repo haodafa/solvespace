@@ -6,6 +6,8 @@
 
 #ifndef SOLVESPACE_RESOURCE_H
 #define SOLVESPACE_RESOURCE_H
+#include "solvespace_core_api.h"
+
 
 #include <functional>
 #include <map>
@@ -29,7 +31,7 @@ std::string LoadString(const std::string &name);
 std::string LoadStringFromGzip(const std::string &name);
 std::shared_ptr<Pixmap> LoadPng(const std::string &name);
 
-class Pixmap {
+class SOLVESPACE_CORE_API Pixmap {
 public:
     enum class Format { BGRA, RGBA, BGR, RGB, A };
 
@@ -59,7 +61,7 @@ public:
     std::shared_ptr<Pixmap> Copy();
 };
 
-class BitmapFont {
+class SOLVESPACE_CORE_API BitmapFont {
 public:
     struct Glyph {
         uint8_t  advanceCells;
@@ -86,7 +88,7 @@ public:
     size_t GetWidth(const std::string &str);
 };
 
-class VectorFont {
+class SOLVESPACE_CORE_API VectorFont {
 public:
     struct Contour {
         std::vector<Point2d>   points;
