@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{4F4A2F08-868C-4762-970F-EED3C53A3742}</ProjectGuid>
+    <RootNamespace>solvespacecore</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)bin\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;SOLVESPACE_CORE_EXPORTS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=_WIN32_WINNT;ISOLATION_AWARE_ENABLED;WIN32_LEAN_AND_MEAN;NOMINMAX;_USE_MATH_DEFINES;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\src;$(ProjectDir)..\..\src\core;$(ProjectDir)..\..\src\ui;$(ProjectDir)..\..\extlib\mimalloc\include;$(ProjectDir)..\..\extlib\eigen;$(ProjectDir)..\..\extlib\zlib;$(ProjectDir)..\..\extlib\libpng;$(ProjectDir)..\..\extlib\freetype\include;$(ProjectDir)..\..\extlib\libdxfrw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles>vector;string</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;SOLVESPACE_CORE_EXPORTS;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_IE=_WIN32_WINNT;ISOLATION_AWARE_ENABLED;WIN32_LEAN_AND_MEAN;NOMINMAX;_USE_MATH_DEFINES;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\src;$(ProjectDir)..\..\src\core;$(ProjectDir)..\..\src\ui;$(ProjectDir)..\..\extlib\mimalloc\include;$(ProjectDir)..\..\extlib\eigen;$(ProjectDir)..\..\extlib\zlib;$(ProjectDir)..\..\extlib\libpng;$(ProjectDir)..\..\extlib\freetype\include;$(ProjectDir)..\..\extlib\libdxfrw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <ForcedIncludeFiles>vector;string</ForcedIncludeFiles>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <LargeAddressAware>true</LargeAddressAware>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\core\bsp.cpp" />
+    <ClCompile Include="..\..\src\core\clipboard.cpp" />
+    <ClCompile Include="..\..\src\core\constraint.cpp" />
+    <ClCompile Include="..\..\src\core\constrainteq.cpp" />
+    <ClCompile Include="..\..\src\core\entity.cpp" />
+    <ClCompile Include="..\..\src\core\export.cpp" />
+    <ClCompile Include="..\..\src\core\exportstep.cpp" />
+    <ClCompile Include="..\..\src\core\exportvector.cpp" />
+    <ClCompile Include="..\..\src\core\expr.cpp" />
+    <ClCompile Include="..\..\src\core\file.cpp" />
+    <ClCompile Include="..\..\src\core\generate.cpp" />
+    <ClCompile Include="..\..\src\core\group.cpp" />
+    <ClCompile Include="..\..\src\core\groupmesh.cpp" />
+    <ClCompile Include="..\..\src\core\importdxf.cpp" />
+    <ClCompile Include="..\..\src\core\importidf.cpp" />
+    <ClCompile Include="..\..\src\core\importmesh.cpp" />
+    <ClCompile Include="..\..\src\core\mesh.cpp" />
+    <ClCompile Include="..\..\src\core\modify.cpp" />
+    <ClCompile Include="..\..\src\core\polygon.cpp" />
+    <ClCompile Include="..\..\src\core\polyline.cpp" />
+    <ClCompile Include="..\..\src\core\request.cpp" />
+    <ClCompile Include="..\..\src\core\resource.cpp" />
+    <ClCompile Include="..\..\src\core\solvespace_core.cpp" />
+    <ClCompile Include="..\..\src\core\srf\boolean.cpp" />
+    <ClCompile Include="..\..\src\core\srf\curve.cpp" />
+    <ClCompile Include="..\..\src\core\srf\merge.cpp" />
+    <ClCompile Include="..\..\src\core\srf\ratpoly.cpp" />
+    <ClCompile Include="..\..\src\core\srf\raycast.cpp" />
+    <ClCompile Include="..\..\src\core\srf\shell.cpp" />
+    <ClCompile Include="..\..\src\core\srf\surface.cpp" />
+    <ClCompile Include="..\..\src\core\srf\surfinter.cpp" />
+    <ClCompile Include="..\..\src\core\srf\triangulate.cpp" />
+    <ClCompile Include="..\..\src\core\style.cpp" />
+    <ClCompile Include="..\..\src\core\system.cpp" />
+    <ClCompile Include="..\..\src\core\ttf.cpp" />
+    <ClCompile Include="..\..\src\core\undoredo.cpp" />
+    <ClCompile Include="..\..\src\core\util.cpp" />
+    <ClCompile Include="..\..\src\ui\platform\platformbase.cpp" />
+    <ClCompile Include="..\..\src\ui\platform\platform.cpp" />
+    <ClCompile Include="..\..\src\ui\render\render.cpp" />
+    <ClCompile Include="..\..\src\ui\render\render2d.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\core\defs.h" />
+    <ClInclude Include="..\..\src\core\dsc.h" />
+    <ClInclude Include="..\..\src\core\expr.h" />
+    <ClInclude Include="..\..\src\core\handle.h" />
+    <ClInclude Include="..\..\src\core\param.h" />
+    <ClInclude Include="..\..\src\core\polygon.h" />
+    <ClInclude Include="..\..\src\core\resource.h" />
+    <ClInclude Include="..\..\src\core\sketch.h" />
+    <ClInclude Include="..\..\src\core\solvespace.h" />
+    <ClInclude Include="..\..\src\core\solvespace_core.h" />
+    <ClInclude Include="..\..\src\core\solvespace_core_api.h" />
+    <ClInclude Include="..\..\src\core\srf\surface.h" />
+    <ClInclude Include="..\..\src\core\ttf.h" />
+    <ClInclude Include="..\..\src\core\util.h" />
+    <ClInclude Include="..\..\src\ui\platform\platform.h" />
+    <ClInclude Include="..\..\src\ui\render\render.h" />
+    <ClInclude Include="..\..\src\ui\ui.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
