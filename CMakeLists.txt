@@ -501,14 +501,13 @@ endif()
 # application components
 if(ENABLE_GUI OR ENABLE_CLI)
     add_subdirectory(res)
-    add_subdirectory(exposed)
 endif()
 add_subdirectory(src)
 if(ENABLE_TESTS)
-    add_subdirectory(test)
+    # add_subdirectory(test) # Removed as tests folder was deleted
 endif()
 if((ENABLE_CLI OR ENABLE_GUI) AND (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo"))
-    add_subdirectory(bench)
+    # add_subdirectory(bench) # Removed as bench folder was deleted
 else()
     message(STATUS "Benchmarking disabled in debug and library builds.")
 endif()
