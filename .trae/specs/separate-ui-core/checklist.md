@@ -1,0 +1,5 @@
+- [ ] 成功定义 `SolveSpaceCore` 类，包含所有的文档状态、文件 I/O 和生成逻辑。
+- [ ] 核心业务逻辑文件（如 `constraint.cpp`, `mesh.cpp`, `export.cpp` 等）不再使用全局变量 `SS` 和 `SK`。
+- [ ] 核心业务逻辑能够在没有 UI 源文件的情况下，被独立编译为一个 CMake 库目标 `solvespace_core`。
+- [ ] 各个 GUI 应用程序（Qt、GTK 等）能够基于新的 `SolveSpaceCore` API 正确编译并运行。
+- [ ] 第三方程序可以在不初始化 UI 的情况下实例化 `SolveSpaceCore`、加载文件并导出模型。
