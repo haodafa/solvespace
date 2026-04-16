@@ -1,356 +1,129 @@
-# SolveSpace
+# SolveSpace - 解耦版架构设计与集成指南
 
-<img src="res/freedesktop/solvespace-scalable.svg" width="70" height="70" alt="SolveSpace Logo" align="left">
+本项目是对开源参数化 3D CAD 软件 **SolveSpace** 的架构重构版本。主要目的是将**核心业务逻辑**（Core）与**图形用户界面**（UI）在物理文件层面上进行完全分离，使您可以将参数化几何引擎、约束求解器、网格生成及文件 I/O 直接作为**动态/静态链接库**嵌入到您自己的程序中。
 
-[![Build Status](https://github.com/solvespace/solvespace/workflows/CD/badge.svg)](https://github.com/solvespace/solvespace/actions)
-[![solvespace](https://snapcraft.io/solvespace/badge.svg)](https://snapcraft.io/solvespace)
-[![solvespace](https://snapcraft.io/solvespace/trending.svg?name=0)](https://snapcraft.io/solvespace)
+---
 
-This repository contains the source code of [SolveSpace][], a parametric
-2d/3d CAD tool.
+## 🏗 架构设计与调用关系
 
-[solvespace]: https://solvespace.com
+重构后的系统采用了严格的“UI 消费 Core”的层级架构，以下是整体的架构图，帮助您理解各个组件之间的关系和数据流向：
 
-## Community
+```mermaid
+graph TD
+    subgraph "Your Application (第三方程序)"
+        App[自定义客户端 / 服务端]
+    end
 
-The official SolveSpace [website][sswebsite] has [tutorials][sstutorial],
-[reference manual][ssref] and a [forum][ssforum]; there is also an official
-IRC channel [#solvespace at web.libera.chat][ssirc].
+    subgraph "SolveSpace UI (src/ui)"
+        UI_Entry[solvespace.cpp (主入口)]
+        UI_Platform[Platform (Qt/GTK/Win32/Mac)]
+        UI_Render[Renderer (OpenGL/Cairo)]
+        UI_Event[Events (鼠标/键盘交互)]
+        
+        UI_Entry --> UI_Platform
+        UI_Platform --> UI_Event
+        UI_Render -->|读取渲染数据| Core_Doc
+    end
 
-[sswebsite]: http://solvespace.com/
-[ssref]: http://solvespace.com/ref.pl
-[sstutorial]: http://solvespace.com/tutorial.pl
-[ssforum]: http://solvespace.com/forum.pl
-[ssirc]: https://web.libera.chat/#solvespace
+    subgraph "SolveSpace Core Library (src/core)"
+        Core_App[SolveSpaceCore (核心上下文)]
+        
+        subgraph "核心业务逻辑 (Business Logic)"
+            Core_Doc[Sketch (模型状态/草图/选择集)]
+            Core_Solver[System (几何约束求解器)]
+            Core_Mesh[BSP/Mesh/Triangulate (几何网格生成)]
+            Core_Undo[UndoRedo (历史记录管理)]
+            Core_IO[File I/O (加载/保存/导出)]
+        end
+        
+        Core_App --> Core_Doc
+        Core_App --> Core_Solver
+        Core_App --> Core_Mesh
+        Core_App --> Core_Undo
+        Core_App --> Core_IO
+        
+        Core_Event[UpdateParamAndSolve (解算触发)] --> Core_Solver
+    end
 
-# Installation
+    subgraph "Solver C API (src/slvs)"
+        Slvs[slvs.h (低级约束求解器接口)]
+    end
 
-### Via Official Packages
-
-_Official_ release packages for macOS (>=10.6 64-bit) and Windows
-(>=Vista 32-bit) are available via [GitHub releases][rel]. These packages are
-automatically built by the SolveSpace maintainers for each stable release.
-
-[rel]: https://github.com/solvespace/solvespace/releases
-
-### Via Flathub
-
-Official releases can be installed as a Flatpak from Flathub.
-
-[Get SolveSpace from Flathub](https://flathub.org/apps/details/com.solvespace.SolveSpace)
-
-These should work on any Linux distribution that supports Flatpak.
-
-### Via Snap Store
-
-Official releases can be installed from the `stable` channel.
-
-Builds from master are automatically released to the `edge` channel in the Snap
-Store. Those packages contain the latest improvements, but receive less testing
-than release builds.
-
-[![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)](https://snapcraft.io/solvespace)
-
-Or install from a terminal:
-
-```sh
-# for the latest stable release:
-snap install solvespace
-
-# for the bleeding edge builds from master:
-snap install solvespace --edge
+    %% 依赖关系
+    App == 链接并调用 ==> Core_App
+    UI_Event == 调用 ==> Core_Event
+    Core_Solver -.-> Slvs
+    
+    classDef core fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    classDef ui fill:#cce5ff,stroke:#0056b3,stroke-width:2px;
+    classDef thirdparty fill:#fff3cd,stroke:#856404,stroke-width:2px;
+    
+    class Core_App,Core_Doc,Core_Solver,Core_Mesh,Core_Undo,Core_IO,Core_Event core;
+    class UI_Entry,UI_Platform,UI_Render,UI_Event ui;
+    class App thirdparty;
 ```
 
-### Via automated edge builds
-
-> :warning: **Edge builds might be unstable or contain severe bugs!**
-> They are intended for experienced users to test new features or verify bugfixes.
-
-Cutting edge builds from the latest master commit are available as zip archives
-from the following links:
-
-- [macOS](https://nightly.link/solvespace/solvespace/workflows/cd/master/macos.zip)
-- [Windows with OpenMP enabled 32bit](https://nightly.link/solvespace/solvespace/workflows/cd/master/windows_x86.zip)
-- [Windows 32bit](https://nightly.link/solvespace/solvespace/workflows/cd/master/windows_single_core_x86.zip)
-- [Windows with OpenMP enabled 64bit](https://nightly.link/solvespace/solvespace/workflows/cd/master/windows_x64.zip)
-- [Windows 64bit](https://nightly.link/solvespace/solvespace/workflows/cd/master/windows_single_core_x64.zip)
-
-**Please note that the 64bit Windows versions do *not* support 6DOF (SpeceMouse, SpaceNavigator) controllers.**
-
-Extract the downloaded archive and install or execute the contained file as is
-appropriate for your platform.
-
-### Via source code
-
-Irrespective of the OS used, before building, check out the project and the
-necessary submodules:
-
-```sh
-git clone https://github.com/solvespace/solvespace
-cd solvespace
-git submodule update --init
-```
-
-You will need `git`. See the platform specific instructions below to install it.
-
-## Building on Linux
-
-### Building for Linux
-
-You will need the usual build tools, CMake, zlib, libpng, cairo, freetype. To
-build the GUI, you will need fontconfig, gtkmm 3.0 (version 3.16 or later) for
-GTK, or QT6 for the newer QT interface, pangomm 1.4, OpenGL and OpenGL GLU, 
-and optionally, the Space Navigator client library. 
-
-On a Debian derivative (e.g. Ubuntu) these can be installed with:
-
-```sh
-sudo apt install git build-essential cmake zlib1g-dev libpng-dev \
-            libcairo2-dev libfreetype6-dev libjson-c-dev \
-            libfontconfig1-dev libpangomm-1.4-dev libgl-dev \
-            libglu-dev libspnav-dev libgtkmm-3.0-dev qt6-base-dev
-```
-
-On a RedHat derivative (e.g. Fedora) the dependencies can be installed with:
-
-```sh
-sudo dnf install git gcc-c++ cmake zlib-devel libpng-devel \
-            cairo-devel freetype-devel json-c-devel \
-            fontconfig-devel pangomm-devel mesa-libGL-devel \
-            mesa-libGLU-devel libspnav-devel gtkmm30-devel \
-            qt6-qtbase-devel
-```
-`gtkmm30-devel` is required to build the GTK version and `qt6-qtbase-devel` is required to build the QT version. One or
-the other may be omitted if both versions are not needed. Likewise with `libgtkmm-3.0-dev` and `qt6-base-dev` for Debuntu
-respectively.
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-After that, build SolveSpace as following:
-
-```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON [-DENABLE_LTO=ON] [-DUSE_QT_GUI=ON] [-DENABLE_GUI=OFF]
-make
-
-# Optionally
-sudo make install
-```
-Optional:
- - -DENABLE_LTO=ON: Enable Link Time Optimization at the expense of longer build time.
- - -DUSE_QT_GUI=ON: Build the newer QT GUI interface.
- - -DENABLE_GUI=OFF: Build only the command-line interface
-
-The GTK graphical interface is built as `build/bin/solvespace`, and the command-line
-interface is built as `build/bin/solvespace-cli`. The QT graphical interface is built
-as `build/bin/solvespace-qt`.
-
-### Building for Windows
-
-Ubuntu will require 20.04 or above. Cross-compiling with WSL is also confirmed
-to work.
-
-You will need the usual build tools, CMake, and a Windows cross-compiler. On a
-Debian derivative (e.g. Ubuntu) these can be installed with:
-
-```sh
-apt-get install git build-essential cmake mingw-w64
-```
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-Build 64-bit SolveSpace with the following:
-
-```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-mingw64.cmake \
-            -DCMAKE_BUILD_TYPE=Release
-make
-```
-
-The graphical interface is built as `build/bin/solvespace.exe`, and the
-command-line interface is built as `build/bin/solvespace-cli.exe`.
-
-Space Navigator support will not be available.
-
-### Building for web (very experimental)
-
-**Please note that this port contains many critical bugs and unimplemented core functions.**
-
-You will need the usual build tools, cmake and [Emscripten][]. On a Debian derivative (e.g. Ubuntu) dependencies other than Emscripten can be installed with:
-
-```sh
-apt-get install git build-essential cmake
-```
-
-First, install and prepare `emsdk`:
-
-```sh
-git clone https://github.com/emscripten-core/emsdk
-cd emsdk
-./emsdk install latest
-./emsdk activate latest
-source ./emsdk_env.sh
-cd ..
-```
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-After that, build SolveSpace as following:
-
-```sh
-mkdir build
-cd build
-emcmake cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_LTO="ON" -DENABLE_TESTS="OFF" -DENABLE_CLI="OFF" -DENABLE_COVERAGE="OFF"
-make
-```
-
-The graphical interface is built as multiple files in the `build/bin` directory with names
-starting with `solvespace`. It can be run locally with `emrun build/bin/solvespace.html`.
-
-The command-line interface is not available.
-
-[emscripten]: https://emscripten.org/
-
-## Building on macOS
-
-You will need git, XCode tools, CMake and libomp. Git, CMake and libomp can be installed
-via [Homebrew][]:
-
-```sh
-brew install git cmake libomp
-```
-
-XCode has to be installed via AppStore or [the Apple website][appledeveloper];
-it requires a free Apple ID.
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-After that, build SolveSpace as following:
-
-```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON
-make
-```
-
-Link Time Optimization is supported by adding `-DENABLE_LTO=ON` to cmake at the
-expense of longer build time.
-
-Alternatively, generate an XCode project, open it, and build the "Release" scheme:
-
-```sh
-mkdir build
-cd build
-cmake .. -G Xcode
-```
-
-The application is built in `build/bin/SolveSpace.app`, the graphical interface executable
-is `build/bin/SolveSpace.app/Contents/MacOS/SolveSpace`, and the command-line interface executable
-is `build/bin/SolveSpace.app/Contents/MacOS/solvespace-cli`.
-
-[homebrew]: https://brew.sh/
-[appledeveloper]: https://developer.apple.com/download/
-
-## Building on OpenBSD
-
-You will need git, cmake, libexecinfo, libpng, gtk3mm and pangomm.
-These can be installed from the ports tree:
-
-```sh
-pkg_add -U git cmake libexecinfo png json-c gtk3mm pangomm
-```
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-After that, build SolveSpace as following:
-
-```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make
-sudo make install
-```
-
-Unfortunately, on OpenBSD, the produced executables are not filesystem location independent
-and must be installed before use. By default, the graphical interface is installed to
-`/usr/local/bin/solvespace`, and the command-line interface is built as
-`/usr/local/bin/solvespace-cli`. It is possible to build only the command-line interface
-by passing the `-DENABLE_GUI=OFF` flag to the cmake invocation.
-
-## Building on Windows
-
-You will need [git][gitwin], [cmake][cmakewin] and a C++ compiler
-(either Visual C++ or MinGW). If using Visual C++, Visual Studio 2015
-or later is required.
-If gawk is in your path be sure it is a proper Windows port that can handle CL LF line endings.
-If not CMake may fail in libpng due to some awk scripts - issue #1228.
-
-Before building, [check out the project and the necessary submodules](#via-source-code).
-
-### Building with Visual Studio IDE
-
-Create a directory `build` in
-the source tree and point cmake-gui to the source tree and that directory.
-Press "Configure" and "Generate", then open `build\solvespace.sln` with
-Visual C++ and build it.
-
-### Building with Visual Studio in a command prompt
-
-First, ensure that `git` and `cl` (the Visual C++ compiler driver) are in your
-`%PATH%`; the latter is usually done by invoking `vcvarsall.bat` from your
-Visual Studio install. Then, run the following in cmd or PowerShell:
-
-```bat
-mkdir build
-cd build
-cmake .. -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release
-nmake
-```
-
-### Building with MinGW
-
-It is also possible to build SolveSpace using [MinGW][mingw], though
-Space Navigator support will be disabled.
-
-The easiest way to build using MinGW is with [MSYS2][msys2]. If you're not using MSYS2, skip
-the installation instructions and ensure that git, cmake, ninja, and gcc are in your `$PATH`.
-
-With MSYS2, you can build either a 32-bit binary or a 64-bit one, depending on the compiler
-used. The following instructions assume you're running the commands inside an `MSYS2 MINGW64`
-terminal window and building a 64-bit version. If you want to build a 32-bit version, you'll
-need to run the commands in an `MSYS2 MINGW32` terminal window and replace `x86_64`
-with `i686` in the installation commands.
-
-First, install Git, GCC, CMake, and Ninja:
-
-```sh
-pacman -Sy mingw-w64-x86_64-git mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
-```
-
-Then, run the following in bash:
-
-```sh
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release -GNinja
-ninja
-```
-
-[gitwin]: https://git-scm.com/download/win
-[cmakewin]: https://www.cmake.org/download/#latest
-[mingw]: http://www.mingw.org/
-[msys2]: https://www.msys2.org/
-
-## Contributing
-
-See the [guide for contributors](CONTRIBUTING.md) for the best way to file issues, contribute code,
-and debug SolveSpace.
-
-## License
-
-SolveSpace is distributed under the terms of the [GPL v3](COPYING.txt) or later.
+### 架构组件说明
+
+1. **SolveSpace Core Library (`src/core`)**
+   - 这是项目的“心脏”，已被完全独立出来，去除了所有的 `extern SolveSpaceUI` 全局依赖，对外统一提供 `SolveSpaceCore` 类。
+   - **线程与状态安全**：内置 `stateMutex` 锁保护，防止在后台求解或 Undo/Redo 时由于界面渲染导致的内存越界或脏读。
+   - **跨平台导出**：所有需要暴露给外部的类都添加了 `SOLVESPACE_CORE_API` 宏（Windows 下为 `__declspec(dllexport)`），直接生成动态库。
+
+2. **SolveSpace UI (`src/ui`)**
+   - 现有的应用程序界面，它目前仅仅是 `SolveSpaceCore` 的一个消费者。
+   - 包含特定于平台的窗口代码（Win32、macOS、GTK）以及渲染层（OpenGL、Cairo）。渲染层只对核心层中的模型进行“只读访问”。
+
+3. **低级 Solver 库 (`src/slvs`)**
+   - 最底层的代数约束求解器，供 `SolveSpaceCore` 中的 `System` 调用。
+
+---
+
+## 🚀 目录结构精简说明
+
+为了保持项目清爽并专注核心业务，无用的模块已被剔除或归档：
+
+- `src/core/`：核心业务逻辑（约束、几何、网格、文件导出）。
+- `src/ui/`：现有的界面程序代码。
+- `src/slvs/`：底层解算器库。
+- `extlib/`：必需的第三方库（如 mimalloc, eigen, libdxfrw 等）。
+- `vs-project/`：为您手动生成的可直接用于 Visual Studio 编译的工程文件配置（内含 `.sln` 和 `.vcxproj`）。
+- `scripts/`：存放开发、重构和自动生成的辅助脚本。
+
+---
+
+## 🛠 编译指南 (Visual Studio / Windows)
+
+为了让您能够非常容易地在 Windows 下开发和集成，本代码库对 VS 编译做了深度支持（预编译头、导出宏处理）。
+
+### 方法一：使用内置的纯净版 VS 项目（推荐）
+如果您只想直接编译核心库（不依赖 CMake 环境）：
+1. 打开 `vs-project/SolveSpace.sln`。
+2. 该解决方案中包含了 `solvespace_core` 动态库项目，已经为您配置好了 `SOLVESPACE_CORE_EXPORTS` 宏及所需的所有预处理头文件与附加包含目录。
+3. 选择 **Debug** 或 **Release**（x64），点击 **生成解决方案** 即可生成 `solvespace_core.dll` 和 `solvespace_core.lib`。
+
+### 方法二：使用 CMake 生成完整解决方案（包含界面）
+如果您希望同时编译出带有界面的 `solvespace.exe` 以便对比和测试：
+1. 打开命令提示符（CMD / PowerShell）。
+2. 进入项目根目录。
+3. 运行 CMake 命令生成 VS 工程：
+   ```cmd
+   cmake -B build-vs -S . -G "Visual Studio 17 2022" -A x64
+   ```
+4. 进入 `build-vs` 目录，打开生成的 `solvespace.sln`。
+5. 编译 `solvespace_core` 目标（生成库），或者编译 `solvespace` 目标（生成可执行程序）。
+
+## 💡 如何在您的程序中嵌入？
+1. 在您的项目中链接生成的 `solvespace_core.lib`。
+2. 将 `src/core` 及 `extlib` 的包含路径（Include Directories）加入到您的项目中。
+3. `#include "solvespace_core.h"`，实例化 `SolveSpaceCore` 类。
+4. 您现在可以直接调用核心类的方法，比如：
+   ```cpp
+   SolveSpaceCore coreApp;
+   // 加载模型
+   coreApp.LoadFromFile("test_model.slvs");
+   // 修改参数并重新解算
+   // ...
+   // 导出为 STL 或执行网格处理
+   coreApp.ExportMeshTo("output.stl");
+   ```
