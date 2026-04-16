@@ -1,0 +1,8 @@
+- [ ] `src/` 下已创建 `core` 和 `ui` 目录。
+- [ ] 核心业务逻辑源文件及头文件已全部移动到 `src/core/` 目录中。
+- [ ] 界面相关的源文件及头文件已全部移动到 `src/ui/` 目录中。
+- [ ] `src/core/solvespace_core.h` 等核心类已添加了跨平台的导出宏 `SOLVESPACE_CORE_API`（处理 `__declspec(dllexport)` / `__declspec(dllimport)`），支持作为动态库编译。
+- [ ] `src/core/CMakeLists.txt` 已正确配置 `solvespace_core` 的库目标（支持 `BUILD_SHARED_LIBS` 时的导出符号）。
+- [ ] `src/ui/CMakeLists.txt` 已正确配置 `solvespace` 的可执行程序并链接了 `solvespace_core` 库。
+- [ ] 项目中因为文件移动导致的头文件包含错误均已修复。
+- [ ] CMake 能够成功生成项目并完成编译，生成的结构为独立的核心库以及依赖该库的 UI 执行文件，且能够支持 Visual Studio 编译。
