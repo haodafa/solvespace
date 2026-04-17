@@ -11,7 +11,8 @@
 
 namespace SolveSpace {
 
-Sketch SK = {};
+Sketch _SK = {};
+Sketch &SK = _SK;
 
 void Platform::FatalError(const std::string &message) {
     fprintf(stderr, "%s", message.c_str());

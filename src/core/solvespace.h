@@ -1,0 +1,568 @@
+//-----------------------------------------------------------------------------
+// All declarations not grouped specially elsewhere.
+//
+// Copyright 2008-2013 Jonathan Westhues.
+//-----------------------------------------------------------------------------
+
+#ifndef SOLVESPACE_H
+#define SOLVESPACE_H
+#include "solvespace_core_api.h"
+
+
+#include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <memory>
+#include <mutex>
+
+#define EIGEN_NO_DEBUG
+#undef Success
+#include <Eigen/SparseCore>
+
+#include "dsc.h"
+#include "polygon.h"
+#include "srf/surface.h"
+#include "render/render.h"
+#include "expr.h"
+#include "sketch.h"
+#include "ttf.h"
+#include "ui.h"
+
+#include "platform/platform.h"
+
+namespace SolveSpace {
+
+using std::min;
+using std::max;
+using std::swap;
+using std::fabs;
+
+enum class Unit : uint32_t {
+    MM = 0,
+    INCHES,
+    METERS,
+    FEET_INCHES
+};
+
+class Pixmap;
+
+enum class SolveResult : uint32_t {
+    OKAY                     = 0,
+    DIDNT_CONVERGE           = 10,
+    REDUNDANT_OKAY           = 11,
+    REDUNDANT_DIDNT_CONVERGE = 12,
+    TOO_MANY_UNKNOWNS        = 20
+};
+
+// Utility functions that are provided in the platform-independent code.
+class SOLVESPACE_CORE_API utf8_iterator {
+    const char *p, *n;
+public:
+    using iterator_category = std::forward_iterator_tag;
+    using value_type = char32_t;
+    using difference_type = std::ptrdiff_t;
+    using pointer = char32_t*;
+    using reference = char32_t&;
+
+    utf8_iterator(const char *p) : p(p), n(NULL) {}
+    bool           operator==(const utf8_iterator &i) const { return p==i.p; }
+    bool           operator!=(const utf8_iterator &i) const { return p!=i.p; }
+    ptrdiff_t      operator- (const utf8_iterator &i) const { return p -i.p; }
+    utf8_iterator& operator++()    { **this; p=n; n=NULL; return *this; }
+    utf8_iterator  operator++(int) { utf8_iterator t(*this); operator++(); return t; }
+    char32_t       operator*();
+    const char*    ptr() const { return p; }
+};
+class SOLVESPACE_CORE_API ReadUTF8 {
+    const std::string &str;
+public:
+    ReadUTF8(const std::string &str) : str(str) {}
+    utf8_iterator begin() const { return utf8_iterator(&str[0]); }
+    utf8_iterator end()   const { return utf8_iterator(&str[0] + str.length()); }
+};
+
+class SOLVESPACE_CORE_API System {
+public:
+    enum { MAX_UNKNOWNS = 2048 };
+
+    EntityList                      entity;
+    ParamList                       param;
+    IdList<Equation,hEquation>      eq;
+
+    // A list of parameters that are being dragged; these are the ones that
+    // we should put as close as possible to their initial positions.
+    ParamSet                        dragged;
+
+    enum {
+        // In general, the tag indicates the subsys that a variable/equation
+        // has been assigned to; these are exceptions for variables:
+        VAR_SUBSTITUTED      = 10000,
+        VAR_DOF_TEST         = 10001,
+        // and for equations:
+        EQ_SUBSTITUTED       = 20000
+    };
+
+    // The system Jacobian matrix
+    struct {
+        // The corresponding equation for each row
+        std::vector<Equation *> eq;
+
+        // The corresponding parameter for each column
+        std::vector<hParam>     param;
+
+        // We're solving AX = B
+        int m, n;
+        struct {
+            // This only observes the Expr - does not own them!
+            Eigen::SparseMatrix<Expr *> sym;
+            Eigen::SparseMatrix<double> num;
+        } A;
+
+        Eigen::VectorXd X;
+
+        struct {
+            // This only observes the Expr - does not own them!
+            std::vector<Expr *> sym;
+            Eigen::VectorXd     num;
+        } B;
+    } mat;
+
+    static const double CONVERGE_TOLERANCE;
+    int CalculateRank();
+    bool TestRank(int *dof = NULL, int *rank = NULL);
+    static bool SolveLinearSystem(const Eigen::SparseMatrix<double> &A,
+                                  const Eigen::VectorXd &B, Eigen::VectorXd *X);
+    bool SolveLeastSquares();
+
+    bool WriteJacobian(int tag);
+    void EvalJacobian();
+
+    void WriteEquationsExceptFor(hConstraint hc, Group *g);
+    void FindWhichToRemoveToFixJacobian(Group *g, List<hConstraint> *bad,
+                                        bool forceDofCheck);
+    SubstitutionMap SolveBySubstitution();
+
+    bool IsDragged(hParam p);
+
+    bool NewtonSolve();
+
+    void MarkParamsFree(bool findFree);
+
+    SolveResult Solve(Group *g, int *dof = NULL, List<hConstraint> *bad = NULL,
+                      bool andFindBad = false, bool andFindFree = false,
+                      bool forceDofCheck = false);
+
+    SolveResult SolveRank(Group *g, int *rank = NULL, int *dof = NULL,
+                          List<hConstraint> *bad = NULL,
+                          bool andFindBad = false, bool andFindFree = false);
+
+    void Clear();
+};
+
+class SOLVESPACE_CORE_API StepFileWriter {
+public:
+    bool HasCartesianPointAnAlias(int number, Vector v, int vertex,
+                                  bool *vertex_has_alias = nullptr);
+    int InsertPoint(int number);
+    int InsertVertex(int number);
+    bool HasBSplineCurveAnAlias(int number, std::vector<int> points);
+    int InsertCurve(int number);
+    bool HasEdgeCurveAnAlias(int number, int prevFinish, int thisFinish, int curveId,
+                        bool *flip = nullptr);
+    int InsertEdgeCurve(int number);
+    bool HasOrientedEdgeAnAlias(int number, int edgeCurveId, bool flip);
+    int InsertOrientedEdge(int number);
+    void ExportSurfacesTo(const Platform::Path &filename);
+    void WriteHeader();
+    void WriteProductHeader();
+    int ExportCurve(SBezier *sb);
+    int ExportCurveLoop(SBezierLoop *loop, bool inner);
+    void ExportSurface(SSurface *ss, SBezierList *sbl);
+    void WriteWireframe();
+    void WriteFooter();
+
+    List<int> curves;
+    List<int> advancedFaces;
+    FILE *f;
+    int id;
+
+    // Structs to keep track of duplicated entities.
+    // Basic alias.
+    typedef struct {
+        int reference;
+        std::vector<int> aliases;
+    } alias_t;
+
+    // Cartesian points.
+    typedef struct {
+        alias_t alias;
+        alias_t vertexAlias;
+        Vector v;
+    } pointAliases_t;
+
+    // Curves.
+    typedef struct {
+        alias_t alias;
+        std::vector<int> memberPoints;
+        RgbaColor color;
+    } curveAliases_t;
+
+    // Edges.
+    typedef struct {
+        alias_t alias;
+        int prevFinish;
+        int thisFinish;
+        int curveId;
+        RgbaColor color;
+    } edgeCurveAliases_t;
+
+    // Edges.
+    typedef struct {
+        alias_t alias;
+        int edgeCurveId;
+        bool flip;
+    } orientedEdgeAliases_t;
+
+    std::vector<pointAliases_t> pointAliases;
+    std::vector<edgeCurveAliases_t> edgeCurveAliases;
+    std::vector<curveAliases_t> curveAliases;
+    std::vector<orientedEdgeAliases_t> orientedEdgeAliases;
+    bool exportParts = true;
+    RgbaColor currentColor;
+};
+
+class SOLVESPACE_CORE_API VectorFileWriter {
+protected:
+    Vector u, v, n, origin;
+    double cameraTan, scale;
+
+public:
+    FILE *f;
+    Platform::Path filename;
+    Vector ptMin, ptMax;
+
+    static double MmToPts(double mm);
+
+    static VectorFileWriter *ForFile(const Platform::Path &filename);
+
+    void SetModelviewProjection(const Vector &u, const Vector &v, const Vector &n,
+                                const Vector &origin, double cameraTan, double scale);
+    Vector Transform(Vector &pos) const;
+
+    void OutputLinesAndMesh(SBezierLoopSetSet *sblss, SMesh *sm);
+
+    void BezierAsPwl(SBezier *sb);
+    void BezierAsNonrationalCubic(SBezier *sb, int depth=0);
+
+    virtual void StartPath(RgbaColor strokeRgb, double lineWidth,
+                            bool filled, RgbaColor fillRgb, hStyle hs) = 0;
+    virtual void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                            bool filled, RgbaColor fillRgb, hStyle hs) = 0;
+    virtual void Bezier(SBezier *sb) = 0;
+    virtual void Triangle(STriangle *tr) = 0;
+    virtual bool OutputConstraints(IdList<Constraint,hConstraint> *) { return false; }
+    virtual void Background(RgbaColor color) = 0;
+    virtual void StartFile() = 0;
+    virtual void FinishAndCloseFile() = 0;
+    virtual bool HasCanvasSize() const = 0;
+    virtual bool CanOutputMesh() const = 0;
+};
+class SOLVESPACE_CORE_API DxfFileWriter : public VectorFileWriter {
+public:
+    struct BezierPath {
+        std::vector<SBezier *> beziers;
+    };
+
+    std::vector<BezierPath>         paths;
+    IdList<Constraint,hConstraint> *constraint;
+
+    static const char *lineTypeName(StipplePattern stippleType);
+
+    bool OutputConstraints(IdList<Constraint,hConstraint> *constraint) override;
+
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return false; }
+    bool CanOutputMesh() const override { return false; }
+    bool NeedToOutput(Constraint *c);
+};
+class SOLVESPACE_CORE_API EpsFileWriter : public VectorFileWriter {
+public:
+    Vector prevPt;
+    void MaybeMoveTo(Vector s, Vector f);
+
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return true; }
+    bool CanOutputMesh() const override { return true; }
+};
+class SOLVESPACE_CORE_API PdfFileWriter : public VectorFileWriter {
+public:
+    uint32_t xref[10];
+    uint32_t bodyStart;
+    Vector prevPt;
+    void MaybeMoveTo(Vector s, Vector f);
+
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return true; }
+    bool CanOutputMesh() const override { return true; }
+};
+class SOLVESPACE_CORE_API SvgFileWriter : public VectorFileWriter {
+public:
+    Vector prevPt;
+    void MaybeMoveTo(Vector s, Vector f);
+
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return true; }
+    bool CanOutputMesh() const override { return true; }
+};
+class SOLVESPACE_CORE_API HpglFileWriter : public VectorFileWriter {
+public:
+    static double MmToHpglUnits(double mm);
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return false; }
+    bool CanOutputMesh() const override { return false; }
+};
+class SOLVESPACE_CORE_API Step2dFileWriter : public VectorFileWriter {
+    StepFileWriter sfw;
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return false; }
+    bool CanOutputMesh() const override { return false; }
+};
+class SOLVESPACE_CORE_API GCodeFileWriter : public VectorFileWriter {
+public:
+    SEdgeList sel;
+    void StartPath( RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void FinishPath(RgbaColor strokeRgb, double lineWidth,
+                    bool filled, RgbaColor fillRgb, hStyle hs) override;
+    void Triangle(STriangle *tr) override;
+    void Bezier(SBezier *sb) override;
+    void Background(RgbaColor color) override;
+    void StartFile() override;
+    void FinishAndCloseFile() override;
+    bool HasCanvasSize() const override { return false; }
+    bool CanOutputMesh() const override { return false; }
+};
+
+#ifdef LIBRARY
+#   define ENTITY EntityBase
+#   define CONSTRAINT ConstraintBase
+#else
+#   define ENTITY Entity
+#   define CONSTRAINT Constraint
+#endif
+class SOLVESPACE_CORE_API Sketch {
+public:
+    // These are user-editable, and define the sketch.
+    IdList<Group,hGroup>            group;
+    List<hGroup>                    groupOrder;
+    IdList<CONSTRAINT,hConstraint>  constraint;
+    IdList<Request,hRequest>        request;
+    IdList<Style,hStyle>            style;
+
+    // These are generated from the above.
+    IdList<ENTITY,hEntity>          entity;
+    ParamList                       param;
+
+    inline CONSTRAINT *GetConstraint(hConstraint h)
+        { return constraint.FindById(h); }
+    inline ENTITY  *GetEntity (hEntity  h) { return entity. FindById(h); }
+    inline Param   *GetParam  (hParam   h) { return param.  FindById(h); }
+    inline Request *GetRequest(hRequest h) { return request.FindById(h); }
+    inline Group   *GetGroup  (hGroup   h) { return group.  FindById(h); }
+    // Styles are handled a bit differently.
+
+    void Clear();
+
+    BBox CalculateEntityBBox(bool includingInvisible);
+    Group *GetRunningMeshGroupFor(hGroup h);
+};
+#undef ENTITY
+#undef CONSTRAINT
+
+#include "solvespace_core.h"
+
+class SOLVESPACE_CORE_API SolveSpaceUI : public SolveSpaceCore {
+public:
+    static void MenuFile(Command id);
+    FILE *fh;
+    void AfterNewFile();
+    void AddToRecentList(const Platform::Path &filename);
+    void Autosave();
+    void RemoveAutosave();
+
+    std::map<Platform::Path, std::shared_ptr<Pixmap>, Platform::PathLess> images;
+    bool ReloadLinkedImage(const Platform::Path &saveFile, Platform::Path *filename,
+                           bool canCancel);
+
+    void UndoEnableMenus();
+
+
+
+
+
+
+
+
+    // The platform-dependent code calls this before entering the msg loop
+    void Init();
+    void Exit();
+
+
+    bool Load(const Platform::Path &filename);
+    bool GetFilenameAndSave(bool saveAs);
+    bool OkayToStartNewFile();
+    hGroup CreateDefaultDrawingGroup();
+    void UpdateWindowTitles();
+    void ClearExisting();
+    void NewFile();
+
+    bool LoadAutosaveFor(const Platform::Path &filename);
+    std::function<void(const Platform::Path &filename, bool is_saveAs, bool is_autosave)> OnSaveFinished;
+
+
+
+
+
+
+    void ExportLinesAndMesh(SEdgeList *sel, SBezierList *sbl, SMesh *sm,
+                            Vector u, Vector v,
+                            Vector n, Vector origin,
+                            double cameraTan,
+                            VectorFileWriter *out);
+
+    static void MenuAnalyze(Command id);
+
+    // Additional display stuff
+    struct {
+        SContour    path;
+        hEntity     point;
+    } traced;
+    SEdgeList nakedEdges;
+    struct {
+        bool        draw;
+        Vector      ptA;
+        Vector      ptB;
+    } extraLine;
+    struct {
+        bool        draw, showOrigin;
+        Vector      pt, u, v;
+    } justExportedInfo;
+    struct {
+        bool   draw;
+        bool   dirty;
+        Vector position;
+    } centerOfMass;
+
+
+
+    void MarkGroupDirty(hGroup hg, bool onlyThis = false);
+    void MarkGroupDirtyByEntity(hEntity he);
+
+    enum class Generate : uint32_t {
+        DIRTY,
+        ALL,
+        REGEN,
+        UNTIL_ACTIVE,
+    };
+
+    void GenerateAll(Generate type = Generate::DIRTY, bool andFindFree = false,
+                     bool genForBBox = false);
+    void SolveGroup(hGroup hg, bool andFindFree);
+    void SolveGroupAndReport(hGroup hg, bool andFindFree);
+    SolveResult TestRankForGroup(hGroup hg, int *rank = NULL);
+    void WriteEqSystemForGroup(hGroup hg);
+    void MarkDraggedParams();
+    void ForceReferences();
+    void UpdateCenterOfMass();
+    bool ActiveGroupsOkay();
+
+
+    static void ShowNakedEdges(bool reportOnlyWhenNotOkay);
+
+
+
+
+
+
+
+
+
+    bool scheduledGenerateAll;
+    bool scheduledShowTW;
+    Platform::TimerRef refreshTimer;
+    Platform::TimerRef autosaveTimer;
+    void Refresh();
+    void ScheduleShowTW();
+    void ScheduleGenerateAll();
+    void ScheduleAutosave();
+
+    static void MenuHelp(Command id);
+
+    void Clear();
+
+    // We allocate TW and sys on the heap to work around an MSVC problem
+    // where it puts zero-initialized global data in the binary (~30M of zeroes)
+    // in release builds.
+    SolveSpaceUI() {}
+
+    ~SolveSpaceUI() {}
+};
+
+void ImportDxf(const Platform::Path &file);
+void ImportDwg(const Platform::Path &file);
+bool LinkIDF(const Platform::Path &filename, EntityList *le, SMesh *m, SShell *sh);
+bool LinkStl(const Platform::Path &filename, EntityList *le, SMesh *m, SShell *sh);
+
+extern SolveSpaceUI SS;
+
+} // namespace SolveSpace
+
+#endif
